@@ -29,6 +29,10 @@ from craeft.networks.generation.configuration_model.assembly import (
 from craeft.networks.generation.configuration_model.clustered import (
     clustered_configuration_model as _clustered,
 )
+from craeft.networks.generation.configuration_model.clustering_prediction import (
+    predict_clustering,
+)
+from craeft.networks.generation.configuration_model.cma import cma
 from craeft.networks.generation.configuration_model.connectors import (
     Connector,
     ConnectorName,
@@ -56,6 +60,7 @@ from craeft.networks.generation.configuration_model.partition import (
     StubPartition,
     partition_stubs,
 )
+from craeft.networks.generation.configuration_model.subgraph_spec import SubgraphSpec
 
 
 def configuration_model(
@@ -140,4 +145,8 @@ __all__ = [
     "MixedCardinalityError",
     "StubPartition",
     "partition_stubs",
+    # CMA
+    "SubgraphSpec",
+    "cma",
+    "predict_clustering",
 ]

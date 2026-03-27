@@ -129,3 +129,31 @@ class MotifDecompositionGenerator:
         return motif_decomposition(
             self.num_nodes, self.clique_size, self.target_clustering, rng=rng
         )
+
+
+@dataclass(frozen=True)
+class CMAGenerator:
+    """Generate networks using the Cardinality Matching Algorithm.
+
+    Accepts a degree sequence and subgraph specifications defining which
+    motifs to embed and how many per node.
+
+    Args:
+        degrees: Per-node degree sequence.
+        specs: Subgraph specs pairing motifs with participation sequences.
+        connector: Connection strategy — "repeated", "refuse", or "erased".
+    """
+
+    degrees: NDArray[np.int_]
+    specs: tuple  # tuple[SubgraphSpec, ...] — use tuple for picklability
+    connector: str = "repeated"
+
+    def generate(self, rng: np.random.Generator) -> csr_matrix:
+        from craeft.networks.generation.configuration_model import cma
+
+        return cma(
+            self.degrees,
+            list(self.specs),
+            rng=rng,
+            connector=self.connector,
+        )
