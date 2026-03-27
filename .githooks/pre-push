@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+echo "pre-push: checking formatting and lint..."
+
+uv run ruff format --check src/ tests/
+uv run ruff check src/ tests/
+
+echo "pre-push: running tests..."
+
+uv run pytest tests/ -q
+
+echo "pre-push: all checks passed."

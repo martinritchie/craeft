@@ -1,0 +1,98 @@
+site_name: craeft
+site_description: Random networks. Controlled structure. Stochastic simulation.
+site_author: Martin Ritchie
+
+site_url: https://martinritchie.github.io/craeft/
+repo_url: https://github.com/martinritchie/craeft
+repo_name: martinritchie/craeft
+
+theme:
+  name: material
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - content.code.copy
+    - toc.follow
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.arithmatex:
+      generic: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+
+extra_javascript:
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            heading_level: 2
+            members_order: source
+            show_bases: true
+            show_if_no_docstring: false
+            docstring_style: google
+            merge_init_into_class: true
+            separate_signature: true
+            show_signature_annotations: true
+            signature_crossrefs: true
+
+exclude_docs: |
+  internal/
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Concepts:
+      - Clustered Configuration Model: concepts/ccm.md
+      - Motifs & Notation: concepts/motifs.md
+      - Gillespie Algorithm: concepts/gillespie.md
+  - API Reference:
+      - api/index.md
+      - Network Generation:
+          - Generators: api/generators.md
+          - Configuration Model: api/configuration-model.md
+          - Erdos-Renyi: api/erdos-renyi.md
+          - Distributions: api/distributions.md
+          - Motifs: api/motifs.md
+      - Network Analysis:
+          - Metrics: api/metrics.md
+          - Rewiring: api/rewiring.md
+      - Simulation:
+          - Point Processes: api/point-processes.md
+          - SIR Epidemics: api/sir.md
+      - Orchestration:
+          - Experiment: api/experiment.md
+      - Plotting: api/plotting.md
+  - Nomenclature: nomenclature.md

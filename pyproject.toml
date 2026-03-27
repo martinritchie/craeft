@@ -1,0 +1,65 @@
+[project]
+name = "craeft"
+version = "0.1.0"
+description = "Random networks. Controlled structure. Stochastic simulation."
+readme = "README.md"
+authors = [
+    { name = "Martin Ritchie", email = "m.ritchie.314@gmail.com" }
+]
+license = "MIT"
+requires-python = ">=3.11"
+
+dependencies = [
+    "numpy>=2.0",
+    "pydantic>=2.0",
+    "scipy>=1.14",
+]
+
+[project.urls]
+Documentation = "https://martinritchie.github.io/craeft/"
+Repository = "https://github.com/martinritchie/craeft"
+
+[project.optional-dependencies]
+plot = [
+    "matplotlib>=3.8",
+]
+docs = [
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.27",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/craeft"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort (import ordering)
+    "UP",  # pyupgrade
+    "PTH", # pathlib enforcement
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["craeft"]
+
+[dependency-groups]
+dev = [
+    "line-profiler>=5.0.0",
+    "ty>=0.0.13",
+    "pytest>=8.0",
+    "pytest-cov>=6.0",
+    "ruff>=0.8",
+    "matplotlib>=3.8",
+    "mkdocs-material>=9.5",
+    "mkdocstrings[python]>=0.27",
+]
