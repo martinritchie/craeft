@@ -2,6 +2,7 @@
 
 import numpy as np
 import pytest
+from scipy.stats import binom, ks_1samp
 
 from craeft.graphs.base import UndirectedGraph
 from craeft.graphs.erdos_renyi import ErdosRenyiConfig, ErdosRenyiGraph
@@ -156,3 +157,22 @@ class TestErdosRenyiGraphStatistics:
         ensemble_mean = np.mean(mean_degrees)
         expected = (n - 1) * p
         assert abs(ensemble_mean - expected) < 0.15 * expected
+
+    def test_edge_count_is_binomial(self) -> None:
+        """Edge counts follow Binomial(max_edges, p)."""
+        n, p = 30, 0.3
+        max_edges = n * (n - 1) // 2
+        config = ErdosRenyiConfig(n=n, p=p)
+        runs = 500
+
+        edge_counts = np.array([
+            ErdosRenyiGraph.from_config(
+                config, np.random.default_rng(seed)
+            ).n_edges
+            for seed in range(runs)
+        ])
+
+        # KS test against Binomial(max_edges, p)
+        # Conservative for discrete distributions (won't falsely reject)
+        _, p_value = ks_1samp(edge_counts, binom.cdf, args=(max_edges, p))
+        assert p_value > 0.01
