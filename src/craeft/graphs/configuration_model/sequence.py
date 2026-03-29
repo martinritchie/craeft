@@ -39,15 +39,7 @@ def sample_degree_sequence(
         Array of n non-negative degrees with even sum,
         each at most n - 1.
     """
-    max_degree = n - 1
-
-    while True:
-        degrees = distribution.rvs(size=n, random_state=rng)
-        if degrees.max() > max_degree:
-            continue
-        if degrees.sum() % 2 != 0:
-            continue
-        return degrees
+    return _sample_sequence(n, distribution, rng, divisor=2)
 
 
 def sample_subgraph_sequence(
@@ -74,17 +66,31 @@ def sample_subgraph_sequence(
         Array of n non-negative counts, each at most n - 1,
         whose sum is divisible by subgraph_nodes.
     """
-    max_count = n - 1
+    return _sample_sequence(n, distribution, rng, divisor=subgraph_nodes)
+
+
+def _sample_sequence(
+    n: int,
+    distribution: rv_discrete,
+    rng: np.random.Generator,
+    divisor: int,
+) -> NDArray[np.int_]:
+    """Sample a sequence with bounded values and divisible sum.
+
+    Rejection samples until all values are in [0, n-1] and the
+    sum is divisible by divisor.
+    """
+    max_value = n - 1
 
     while True:
-        counts = distribution.rvs(size=n, random_state=rng)
-        if counts.min() < 0:
+        values = distribution.rvs(size=n, random_state=rng)
+        if values.min() < 0:
             continue
-        if counts.max() > max_count:
+        if values.max() > max_value:
             continue
-        if int(counts.sum()) % subgraph_nodes != 0:
+        if int(values.sum()) % divisor != 0:
             continue
-        return counts
+        return values
 
 
 def decompose(
