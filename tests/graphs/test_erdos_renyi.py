@@ -165,12 +165,12 @@ class TestErdosRenyiGraphStatistics:
         config = ErdosRenyiConfig(n=n, p=p)
         runs = 500
 
-        edge_counts = np.array([
-            ErdosRenyiGraph.from_config(
-                config, np.random.default_rng(seed)
-            ).n_edges
-            for seed in range(runs)
-        ])
+        edge_counts = np.array(
+            [
+                ErdosRenyiGraph.from_config(config, np.random.default_rng(seed)).n_edges
+                for seed in range(runs)
+            ]
+        )
 
         # KS test against Binomial(max_edges, p)
         # Conservative for discrete distributions (won't falsely reject)
