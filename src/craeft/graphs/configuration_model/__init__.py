@@ -1,19 +1,17 @@
 """Configuration model for generating random graphs with prescribed degree sequences."""
 
-from craeft.graphs.configuration_model.graph import (
+from craeft.graphs.configuration_model.models import (
+    CMAConfig,
+    CMAGraph,
     ConfigModelConfig,
     ConfigModelGraph,
-)
-from craeft.graphs.configuration_model.pairing import (
-    pair_stubs,
-)
-from craeft.graphs.configuration_model.sequence import (
-    sample_degree_sequence,
+    SubgraphSpec,
 )
 
 __all__ = [
+    "CMAConfig",
+    "CMAGraph",
     "ConfigModelConfig",
     "ConfigModelGraph",
-    "pair_stubs",
-    "sample_degree_sequence",
+    "SubgraphSpec",
 ]

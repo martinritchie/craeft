@@ -8,8 +8,8 @@ from craeft.graphs.base import UndirectedGraph
 from craeft.graphs.configuration_model import (
     ConfigModelConfig,
     ConfigModelGraph,
-    sample_degree_sequence,
 )
+from craeft.graphs.configuration_model.sequence import sample_degree_sequence
 
 # ---------------------------------------------------------------------------
 # Config validation
