@@ -19,7 +19,7 @@ from numpy.typing import NDArray
 from scipy.sparse import coo_matrix, csr_matrix
 
 if TYPE_CHECKING:
-    from craeft.graphs.configuration_model.models import SubgraphSpec
+    from craeft.graphs.configuration_model.models import SubgraphSequence
     from craeft.graphs.configuration_model.sequence import Allocation
 
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 
 
 def connect_subgraphs(
-    specs: list[SubgraphSpec],
+    sequences: list[SubgraphSequence],
     allocation: Allocation,
     rng: np.random.Generator,
     max_attempts: int = 1000,
@@ -42,7 +42,7 @@ def connect_subgraphs(
     already exist. Reshuffles on collision.
 
     Args:
-        specs: Subgraph specifications.
+        sequences: Subgraph sequences.
         allocation: Hyperstub allocation from greedy matching.
         rng: Random number generator.
         max_attempts: Maximum consecutive failures before raising.

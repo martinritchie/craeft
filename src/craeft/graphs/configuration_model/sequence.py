@@ -1,8 +1,8 @@
-"""Sequence sampling, transformation, and allocation for the configuration model family.
+"""Sequence sampling and allocation for the configuration model family.
 
-Handles the full sequence lifecycle:
-    - Sampling: degree sequences, subgraph participation sequences
-    - Decomposition: multinomial split into corner-type counts
+Handles:
+    - Sampling: degree sequences (shared _sample_sequence used by
+      SubgraphSequence.sample as well)
     - Matching: greedy allocation of hyperstubs to nodes
 """
 
@@ -16,7 +16,10 @@ from numpy.typing import NDArray
 from scipy.stats import rv_discrete
 
 if TYPE_CHECKING:
-    from craeft.graphs.configuration_model.models import SubgraphSpec
+    from craeft.graphs.configuration_model.models import (
+        Decomposition,
+        SubgraphSequence,
+    )
 
 
 def sample_degree_sequence(
@@ -40,33 +43,6 @@ def sample_degree_sequence(
         each at most n - 1.
     """
     return _sample_sequence(n, distribution, rng, divisor=2)
-
-
-def sample_subgraph_sequence(
-    n: int,
-    distribution: rv_discrete,
-    subgraph_nodes: int,
-    rng: np.random.Generator,
-) -> NDArray[np.int_]:
-    """Sample a per-node subgraph participation sequence.
-
-    Draws n participation counts independently and rejects
-    sequences where the total is not divisible by the number
-    of nodes in the subgraph (required to form complete instances).
-
-    Args:
-        n: Number of nodes.
-        distribution: Frozen scipy discrete distribution for
-            per-node participation counts (e.g. poisson(1)).
-        subgraph_nodes: Number of nodes in the subgraph. The total
-            participation count must be divisible by this.
-        rng: Random number generator.
-
-    Returns:
-        Array of n non-negative counts, each at most n - 1,
-        whose sum is divisible by subgraph_nodes.
-    """
-    return _sample_sequence(n, distribution, rng, divisor=subgraph_nodes)
 
 
 def _sample_sequence(
@@ -93,27 +69,6 @@ def _sample_sequence(
         return values
 
 
-def decompose(
-    spec: SubgraphSpec,
-    rng: np.random.Generator,
-) -> dict[int, NDArray[np.int_]]:
-    """Decompose a subgraph sequence into per-corner-type counts.
-
-    For complete subgraphs (single corner type), returns the
-    sequence unchanged. For incomplete subgraphs, uses the
-    multinomial distribution and rejects until column totals
-    match the exact corner-type proportions.
-
-    Args:
-        spec: Subgraph specification with subgraph and sequence.
-        rng: Random number generator.
-
-    Returns:
-        Mapping from corner type to per-node count array.
-    """
-    ...
-
-
 # ---------------------------------------------------------------------------
 # Matching
 # ---------------------------------------------------------------------------
@@ -124,7 +79,7 @@ class Allocation:
     """Result of greedy matching: hyperstub bins and remaining singles.
 
     Attributes:
-        bins: Mapping from (spec_index, corner_type) to per-node
+        bins: Mapping from (sequence_index, corner_type) to per-node
             hyperstub counts.
         singles: Per-node count of remaining single stubs.
     """
@@ -132,10 +87,10 @@ class Allocation:
     bins: dict[tuple[int, int], NDArray[np.int_]]
     singles: NDArray[np.int_]
 
-    def node_ids_for(self, spec_index: int, corner_type: int) -> NDArray[np.int_]:
+    def node_ids_for(self, sequence_index: int, corner_type: int) -> NDArray[np.int_]:
         """Flat array of node IDs for a specific bin.
 
-        Each node i appears bins[(spec_index, corner_type)][i] times.
+        Each node i appears bins[(sequence_index, corner_type)][i] times.
         """
         ...
 
@@ -146,8 +101,8 @@ class Allocation:
 
 def cardinality_match(
     degrees: NDArray[np.int_],
-    specs: list[SubgraphSpec],
-    decompositions: list[dict[int, NDArray[np.int_]]],
+    sequences: list[SubgraphSequence],
+    decompositions: list[Decomposition],
     rng: np.random.Generator,
 ) -> Allocation:
     """Assign hyperstub tuples to nodes via greedy cardinality matching.
@@ -161,8 +116,8 @@ def cardinality_match(
 
     Args:
         degrees: Per-node degree sequence.
-        specs: Subgraph specifications.
-        decompositions: Per-spec multinomial decompositions.
+        sequences: Subgraph sequences.
+        decompositions: Per-sequence multinomial decompositions.
         rng: Random generator for tie-breaking.
 
     Returns:

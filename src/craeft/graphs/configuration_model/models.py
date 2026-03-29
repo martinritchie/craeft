@@ -1,7 +1,7 @@
 """Data models and graph classes for the configuration model family.
 
 Contains all user-facing types: configs, graph classes, and the
-subgraph specification for CMA.
+subgraph sequence for CMA.
 """
 
 from __future__ import annotations
@@ -11,42 +11,94 @@ from typing import Self
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.stats import rv_discrete
 
 from craeft.graphs.base import GraphConfig, Subgraph, UndirectedGraph
 from craeft.graphs.configuration_model.connection import connect_singles
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
 
 # ---------------------------------------------------------------------------
-# SubgraphSpec
+# Decomposition result
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
-class SubgraphSpec:
-    """A subgraph paired with per-node participation counts.
+class Decomposition:
+    """Per-corner-type counts from multinomial decomposition.
 
-    Derives CMA-specific properties (corner types, cardinalities)
+    Attributes:
+        counts: Mapping from corner type to per-node count array.
+    """
+
+    counts: dict[int, NDArray[np.int_]]
+
+
+# ---------------------------------------------------------------------------
+# SubgraphSequence
+# ---------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class SubgraphSequence:
+    """A subgraph paired with a participation distribution.
+
+    Describes which subgraph structure to embed and how participation
+    counts are distributed across nodes. The concrete sequence is
+    sampled at generation time via ``sample``.
+
+    CMA-specific properties (corner types, cardinalities) are derived
     from the subgraph's degree structure.
 
     Attributes:
         subgraph: The subgraph structure to embed.
-        sequence: Per-node count of subgraph instances. Length must
-            equal the number of nodes in the network.
+        distribution: Frozen scipy discrete distribution for
+            per-node participation counts (e.g. poisson(1)).
     """
 
     subgraph: Subgraph
-    sequence: NDArray[np.int_]
+    distribution: rv_discrete
 
-    def __post_init__(self) -> None: ...
+    def sample(self, n: int, rng: np.random.Generator) -> NDArray[np.int_]:
+        """Sample a participation sequence of length n.
 
-    @property
-    def total(self) -> int:
-        """Total subgraph instances across all nodes."""
-        ...
+        Rejection samples until all values are in [0, n-1] and the
+        total is divisible by the subgraph's node count.
 
-    @property
-    def n_nodes(self) -> int:
-        """Number of nodes in the network (length of sequence)."""
+        Args:
+            n: Number of nodes in the network.
+            rng: Random number generator.
+
+        Returns:
+            Array of n non-negative counts whose sum is divisible
+            by subgraph.num_nodes.
+        """
+        from craeft.graphs.configuration_model.sequence import (
+            _sample_sequence,
+        )
+
+        return _sample_sequence(
+            n, self.distribution, rng, divisor=self.subgraph.num_nodes
+        )
+
+    def _decompose(
+        self,
+        sequence: NDArray[np.int_],
+        rng: np.random.Generator,
+    ) -> Decomposition:
+        """Decompose a sampled sequence into corner-type counts.
+
+        For complete subgraphs (single corner type), returns the
+        sequence unchanged. For incomplete subgraphs, uses the
+        multinomial distribution and rejects until column totals
+        match the exact corner-type proportions.
+
+        Args:
+            sequence: A sampled participation sequence from ``sample``.
+            rng: Random number generator.
+
+        Returns:
+            Decomposition with per-corner-type count arrays.
+        """
         ...
 
     @property
@@ -137,13 +189,13 @@ class CMAConfig(GraphConfig):
     Attributes:
         n: Number of nodes.
         degrees: Per-node degree sequence.
-        specs: Subgraph specifications pairing subgraphs with
-            per-node participation sequences.
+        sequences: Subgraph sequences defining which subgraphs
+            to embed and their participation distributions.
         max_retries: Maximum reset-and-retry attempts.
     """
 
     degrees: NDArray[np.int_]
-    specs: tuple[SubgraphSpec, ...]
+    sequences: tuple[SubgraphSequence, ...]
     max_retries: int = 100
 
     def __post_init__(self) -> None: ...
@@ -152,9 +204,9 @@ class CMAConfig(GraphConfig):
 class CMAGraph(UndirectedGraph[CMAConfig]):
     """Network with prescribed degree sequence and subgraph structure.
 
-    Generated via the Cardinality Matching Algorithm: decomposes
-    subgraph sequences, greedily matches hyperstubs to nodes,
-    connects subgraph instances (checking for duplicates and
+    Generated via the Cardinality Matching Algorithm: samples and
+    decomposes subgraph sequences, greedily matches hyperstubs to
+    nodes, connects subgraph instances (checking for duplicates and
     existing edges), then pairs remaining single stubs.
 
     Retries from scratch on failure (dead-end configurations).
@@ -169,11 +221,12 @@ class CMAGraph(UndirectedGraph[CMAConfig]):
         """Generate a CMA graph.
 
         The algorithm:
-            1. Multinomial decomposition per subgraph spec
-            2. Greedy cardinality matching
-            3. Connect subgraph instances (with multi-edge check)
-            4. Pair remaining single stubs
-            5. Assemble into adjacency matrix
+            1. Sample participation sequences from each SubgraphSequence
+            2. Multinomial decomposition per sequence
+            3. Greedy cardinality matching
+            4. Connect subgraph instances (with multi-edge check)
+            5. Pair remaining single stubs
+            6. Assemble into adjacency matrix
 
         On failure (AllocationError or ConnectionError), retries
         up to config.max_retries times with fresh random state.
