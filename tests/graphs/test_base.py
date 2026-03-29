@@ -1,4 +1,4 @@
-"""Tests for BaseGraph, UndirectedGraph, DirectedGraph, Subgraph, and DirectedSubgraph."""
+"""Tests for graph and subgraph base classes."""
 
 from typing import Self
 
@@ -7,7 +7,6 @@ import pytest
 from scipy.sparse import csr_matrix
 
 from craeft.graphs.base import (
-    BaseGraph,
     DirectedGraph,
     DirectedSubgraph,
     GraphConfig,
