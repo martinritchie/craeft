@@ -7,7 +7,6 @@ from craeft.graphs.configuration_model.models import (
     ConfigModelGraph,
 )
 from craeft.graphs.configuration_model.sequence import (
-    Decomposition,
     SubgraphSequence,
 )
 
@@ -16,6 +15,5 @@ __all__ = [
     "CMAGraph",
     "ConfigModelConfig",
     "ConfigModelGraph",
-    "Decomposition",
     "SubgraphSequence",
 ]

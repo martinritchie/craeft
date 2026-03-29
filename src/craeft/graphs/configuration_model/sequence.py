@@ -1,7 +1,7 @@
 """Sequence types, sampling, and allocation for the configuration model family.
 
 Owns the full sequence lifecycle:
-    - Types: SubgraphSequence, Decomposition, Allocation
+    - Types: SubgraphSequence, Allocation
     - Sampling: degree sequences, subgraph participation sequences
     - Matching: greedy allocation of hyperstubs to nodes
 """
@@ -15,22 +15,6 @@ from numpy.typing import NDArray
 from scipy.stats import rv_discrete
 
 from craeft.graphs.base import Subgraph
-
-# ---------------------------------------------------------------------------
-# Decomposition result
-# ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Decomposition:
-    """Per-corner-type counts from multinomial decomposition.
-
-    Attributes:
-        counts: Mapping from corner type to per-node count array.
-    """
-
-    counts: dict[int, NDArray[np.int_]]
-
 
 # ---------------------------------------------------------------------------
 # SubgraphSequence
@@ -79,7 +63,7 @@ class SubgraphSequence:
         self,
         sequence: NDArray[np.int_],
         rng: np.random.Generator,
-    ) -> Decomposition:
+    ) -> dict[int, NDArray[np.int_]]:
         """Decompose a sampled sequence into corner-type counts.
 
         For complete subgraphs (single corner type), returns the
@@ -92,7 +76,7 @@ class SubgraphSequence:
             rng: Random number generator.
 
         Returns:
-            Decomposition with per-corner-type count arrays.
+            Mapping from corner type to per-node count array.
         """
         ...
 
@@ -206,7 +190,7 @@ class Allocation:
 def cardinality_match(
     degrees: NDArray[np.int_],
     sequences: list[SubgraphSequence],
-    decompositions: list[Decomposition],
+    decompositions: list[dict[int, NDArray[np.int_]]],
     rng: np.random.Generator,
 ) -> Allocation:
     """Assign hyperstub tuples to nodes via greedy cardinality matching.
