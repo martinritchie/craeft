@@ -1,8 +1,4 @@
-"""Data models and graph classes for the configuration model family.
-
-Contains all user-facing types: configs, graph classes, and the
-subgraph sequence for CMA.
-"""
+"""Graph configs and classes for the configuration model family."""
 
 from __future__ import annotations
 
@@ -11,120 +7,11 @@ from typing import Self
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.stats import rv_discrete
 
-from craeft.graphs.base import GraphConfig, Subgraph, UndirectedGraph
+from craeft.graphs.base import GraphConfig, UndirectedGraph
 from craeft.graphs.configuration_model.connection import connect_singles
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
-
-# ---------------------------------------------------------------------------
-# Decomposition result
-# ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class Decomposition:
-    """Per-corner-type counts from multinomial decomposition.
-
-    Attributes:
-        counts: Mapping from corner type to per-node count array.
-    """
-
-    counts: dict[int, NDArray[np.int_]]
-
-
-# ---------------------------------------------------------------------------
-# SubgraphSequence
-# ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class SubgraphSequence:
-    """A subgraph paired with a participation distribution.
-
-    Describes which subgraph structure to embed and how participation
-    counts are distributed across nodes. The concrete sequence is
-    sampled at generation time via ``sample``.
-
-    CMA-specific properties (corner types, cardinalities) are derived
-    from the subgraph's degree structure.
-
-    Attributes:
-        subgraph: The subgraph structure to embed.
-        distribution: Frozen scipy discrete distribution for
-            per-node participation counts (e.g. poisson(1)).
-    """
-
-    subgraph: Subgraph
-    distribution: rv_discrete
-
-    def sample(self, n: int, rng: np.random.Generator) -> NDArray[np.int_]:
-        """Sample a participation sequence of length n.
-
-        Rejection samples until all values are in [0, n-1] and the
-        total is divisible by the subgraph's node count.
-
-        Args:
-            n: Number of nodes in the network.
-            rng: Random number generator.
-
-        Returns:
-            Array of n non-negative counts whose sum is divisible
-            by subgraph.num_nodes.
-        """
-        from craeft.graphs.configuration_model.sequence import (
-            _sample_sequence,
-        )
-
-        return _sample_sequence(
-            n, self.distribution, rng, divisor=self.subgraph.num_nodes
-        )
-
-    def _decompose(
-        self,
-        sequence: NDArray[np.int_],
-        rng: np.random.Generator,
-    ) -> Decomposition:
-        """Decompose a sampled sequence into corner-type counts.
-
-        For complete subgraphs (single corner type), returns the
-        sequence unchanged. For incomplete subgraphs, uses the
-        multinomial distribution and rejects until column totals
-        match the exact corner-type proportions.
-
-        Args:
-            sequence: A sampled participation sequence from ``sample``.
-            rng: Random number generator.
-
-        Returns:
-            Decomposition with per-corner-type count arrays.
-        """
-        ...
-
-    @property
-    def corner_types(self) -> list[int]:
-        """Corner type for each node in the subgraph (derived from degree)."""
-        ...
-
-    @property
-    def cardinalities(self) -> dict[int, int]:
-        """Maps corner type to its degree within the subgraph."""
-        ...
-
-    @property
-    def type_counts(self) -> dict[int, int]:
-        """Maps corner type to how many nodes have that type."""
-        ...
-
-    @property
-    def is_complete(self) -> bool:
-        """True if all nodes in the subgraph have equal degree."""
-        ...
-
-    def edges_for(self, nodes: NDArray[np.int_]) -> tuple[list[int], list[int]]:
-        """Map the subgraph's structure onto concrete node IDs."""
-        ...
-
 
 # ---------------------------------------------------------------------------
 # Vanilla configuration model
