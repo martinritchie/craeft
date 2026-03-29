@@ -68,6 +68,8 @@ class BaseGraph(ABC, Generic[C]):
     def __eq__(self, other: object) -> bool:
         if not isinstance(other, BaseGraph):
             return NotImplemented
+        if self._adjacency.shape != other._adjacency.shape:
+            return False
         return (self._adjacency != other._adjacency).nnz == 0
 
 
