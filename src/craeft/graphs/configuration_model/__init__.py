@@ -5,6 +5,8 @@ from craeft.graphs.configuration_model.models import (
     CMAGraph,
     ConfigModelConfig,
     ConfigModelGraph,
+)
+from craeft.graphs.configuration_model.sequence import (
     Decomposition,
     SubgraphSequence,
 )
