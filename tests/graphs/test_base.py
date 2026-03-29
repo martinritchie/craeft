@@ -40,35 +40,23 @@ class _StubDirected(DirectedGraph[GraphConfig]):
 # Test data
 # ---------------------------------------------------------------------------
 
-TRIANGLE = csr_matrix(
-    np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int_)
-)
+TRIANGLE = csr_matrix(np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int_))
 
 SQUARE = csr_matrix(
-    np.array(
-        [[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]], dtype=np.int_
-    )
+    np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]], dtype=np.int_)
 )
 
 DISCONNECTED = csr_matrix(
-    np.array(
-        [[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.int_
-    )
+    np.array([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]], dtype=np.int_)
 )
 
-DIRECTED_CYCLE = csr_matrix(
-    np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]], dtype=np.int_)
-)
+DIRECTED_CYCLE = csr_matrix(np.array([[0, 1, 0], [0, 0, 1], [1, 0, 0]], dtype=np.int_))
 
 DIRECTED_DISCONNECTED = csr_matrix(
-    np.array(
-        [[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 0]], dtype=np.int_
-    )
+    np.array([[0, 1, 0, 0], [0, 0, 0, 0], [0, 0, 0, 1], [0, 0, 0, 0]], dtype=np.int_)
 )
 
-DIRECTED_CHAIN = csr_matrix(
-    np.array([[0, 1, 0], [0, 0, 1], [0, 0, 0]], dtype=np.int_)
-)
+DIRECTED_CHAIN = csr_matrix(np.array([[0, 1, 0], [0, 0, 1], [0, 0, 0]], dtype=np.int_))
 
 TRIANGLE_ADJ = np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int_)
 
@@ -320,7 +308,9 @@ class TestSubgraphEq:
         assert Subgraph(adjacency=TRIANGLE_ADJ) != Subgraph(adjacency=SQUARE_ADJ)
 
     def test_not_implemented_for_non_subgraph(self) -> None:
-        assert Subgraph(adjacency=TRIANGLE_ADJ).__eq__("not a subgraph") is NotImplemented
+        assert (
+            Subgraph(adjacency=TRIANGLE_ADJ).__eq__("not a subgraph") is NotImplemented
+        )
 
 
 class TestSubgraphRepr:
