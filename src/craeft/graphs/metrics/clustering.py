@@ -95,9 +95,7 @@ def local_clustering(adjacency: SparseMatrix) -> NDArray[np.floating]:
 
     # Avoid division by zero for degree < 2
     with np.errstate(divide="ignore", invalid="ignore"):
-        clustering = np.where(
-            max_triangles > 0, tri / max_triangles, 0.0
-        )
+        clustering = np.where(max_triangles > 0, tri / max_triangles, 0.0)
 
     return clustering
 

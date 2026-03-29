@@ -18,9 +18,7 @@ class TestCountTriangles:
     def test_single_triangle(self, triangle_graph: csr_array) -> None:
         assert count_triangles(triangle_graph) == 1
 
-    def test_complete_k4_has_four_triangles(
-        self, complete_graph_k4: csr_array
-    ) -> None:
+    def test_complete_k4_has_four_triangles(self, complete_graph_k4: csr_array) -> None:
         assert count_triangles(complete_graph_k4) == 4
 
     def test_chain_has_no_triangles(self, chain_graph: csr_array) -> None:
@@ -54,9 +52,7 @@ class TestTrianglesPerNode:
         result = triangles_per_node(complete_graph_k4)
         np.testing.assert_array_equal(result, [3, 3, 3, 3])
 
-    def test_star_all_nodes_have_zero(
-        self, star_graph: csr_array
-    ) -> None:
+    def test_star_all_nodes_have_zero(self, star_graph: csr_array) -> None:
         result = triangles_per_node(star_graph)
         np.testing.assert_array_equal(result, [0, 0, 0, 0])
 
@@ -70,29 +66,19 @@ class TestTrianglesPerNode:
 class TestLocalClustering:
     """Tests for local clustering coefficient."""
 
-    def test_triangle_all_ones(
-        self, triangle_graph: csr_array
-    ) -> None:
+    def test_triangle_all_ones(self, triangle_graph: csr_array) -> None:
         result = local_clustering(triangle_graph)
         np.testing.assert_array_almost_equal(result, [1.0, 1.0, 1.0])
 
-    def test_complete_k4_all_ones(
-        self, complete_graph_k4: csr_array
-    ) -> None:
+    def test_complete_k4_all_ones(self, complete_graph_k4: csr_array) -> None:
         result = local_clustering(complete_graph_k4)
-        np.testing.assert_array_almost_equal(
-            result, [1.0, 1.0, 1.0, 1.0]
-        )
+        np.testing.assert_array_almost_equal(result, [1.0, 1.0, 1.0, 1.0])
 
-    def test_star_central_node_is_zero(
-        self, star_graph: csr_array
-    ) -> None:
+    def test_star_central_node_is_zero(self, star_graph: csr_array) -> None:
         result = local_clustering(star_graph)
         assert result[0] == 0.0
 
-    def test_star_leaf_nodes_are_zero(
-        self, star_graph: csr_array
-    ) -> None:
+    def test_star_leaf_nodes_are_zero(self, star_graph: csr_array) -> None:
         result = local_clustering(star_graph)
         np.testing.assert_array_equal(result[1:], [0.0, 0.0, 0.0])
 
@@ -124,27 +110,17 @@ class TestLocalClustering:
 class TestGlobalClusteringCoefficient:
     """Tests for global clustering coefficient (transitivity)."""
 
-    def test_triangle_is_one(
-        self, triangle_graph: csr_array
-    ) -> None:
-        assert global_clustering_coefficient(triangle_graph) == pytest.approx(
-            1.0
-        )
+    def test_triangle_is_one(self, triangle_graph: csr_array) -> None:
+        assert global_clustering_coefficient(triangle_graph) == pytest.approx(1.0)
 
-    def test_complete_k4_is_one(
-        self, complete_graph_k4: csr_array
-    ) -> None:
-        assert global_clustering_coefficient(
-            complete_graph_k4
-        ) == pytest.approx(1.0)
+    def test_complete_k4_is_one(self, complete_graph_k4: csr_array) -> None:
+        assert global_clustering_coefficient(complete_graph_k4) == pytest.approx(1.0)
 
     def test_star_is_zero(self, star_graph: csr_array) -> None:
         assert global_clustering_coefficient(star_graph) == pytest.approx(0.0)
 
     def test_chain_is_zero(self, chain_graph: csr_array) -> None:
-        assert global_clustering_coefficient(chain_graph) == pytest.approx(
-            0.0
-        )
+        assert global_clustering_coefficient(chain_graph) == pytest.approx(0.0)
 
     def test_two_triangles_shared_edge(
         self, two_triangles_shared_edge: csr_array
@@ -171,7 +147,5 @@ class TestSparseMatrixCompatibility:
         assert global_clustering_coefficient(adj) == pytest.approx(1.0)
 
     def test_accepts_integer_dtype(self) -> None:
-        adj = csr_matrix(
-            [[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int32
-        )
+        adj = csr_matrix([[0, 1, 1], [1, 0, 1], [1, 1, 0]], dtype=np.int32)
         assert count_triangles(adj) == 1
