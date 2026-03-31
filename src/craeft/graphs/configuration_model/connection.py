@@ -53,7 +53,7 @@ class Connector:
 
         Args:
             sequence: The subgraph sequence being connected.
-            allocation: Hyperstub allocation from greedy matching.
+            allocation: Subgraph allocation from greedy assignment.
             sequence_index: Index of this sequence in the allocation.
             max_attempts: Maximum consecutive failures before raising.
 
