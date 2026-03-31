@@ -29,8 +29,8 @@ class SubgraphSequence:
     counts are distributed across nodes. The concrete sequence is
     sampled at generation time via ``sample``.
 
-    CMA-specific properties (corner types, cardinalities) are derived
-    from the subgraph's degree structure.
+    CMA-specific properties (orbits, orbit degrees) are derived
+    from the subgraph's automorphism group.
 
     Attributes:
         subgraph: The subgraph structure to embed.
@@ -64,40 +64,43 @@ class SubgraphSequence:
         sequence: NDArray[np.int_],
         rng: np.random.Generator,
     ) -> dict[int, NDArray[np.int_]]:
-        """Decompose a sampled sequence into corner-type counts.
+        """Decompose a sampled sequence into per-orbit counts.
 
-        For complete subgraphs (single corner type), returns the
-        sequence unchanged. For incomplete subgraphs, uses the
+        For vertex-transitive subgraphs (single orbit), returns the
+        sequence unchanged. For non-transitive subgraphs, uses the
         multinomial distribution and rejects until column totals
-        match the exact corner-type proportions.
+        match the exact orbit proportions.
 
         Args:
             sequence: A sampled participation sequence from ``sample``.
             rng: Random number generator.
 
         Returns:
-            Mapping from corner type to per-node count array.
+            Mapping from orbit label to per-node count array.
         """
         ...
 
     @property
-    def corner_types(self) -> list[int]:
-        """Corner type for each node in the subgraph (derived from degree)."""
+    def orbits(self) -> list[int]:
+        """Orbit label for each node in the subgraph.
+
+        Nodes in the same automorphism orbit receive the same label.
+        """
         ...
 
     @property
-    def cardinalities(self) -> dict[int, int]:
-        """Maps corner type to its degree within the subgraph."""
+    def orbit_degrees(self) -> dict[int, int]:
+        """Maps orbit label to its degree within the subgraph."""
         ...
 
     @property
-    def type_counts(self) -> dict[int, int]:
-        """Maps corner type to how many nodes have that type."""
+    def orbit_sizes(self) -> dict[int, int]:
+        """Maps orbit label to how many nodes belong to that orbit."""
         ...
 
     @property
-    def is_complete(self) -> bool:
-        """True if all nodes in the subgraph have equal degree."""
+    def is_vertex_transitive(self) -> bool:
+        """True if all nodes belong to a single orbit."""
         ...
 
     def edges_for(self, nodes: NDArray[np.int_]) -> tuple[list[int], list[int]]:
@@ -167,7 +170,7 @@ class Allocation:
     """Result of greedy matching: hyperstub bins and remaining singles.
 
     Attributes:
-        bins: Mapping from (sequence_index, corner_type) to per-node
+        bins: Mapping from (sequence_index, orbit) to per-node
             hyperstub counts.
         singles: Per-node count of remaining single stubs.
     """
@@ -175,10 +178,10 @@ class Allocation:
     bins: dict[tuple[int, int], NDArray[np.int_]]
     singles: NDArray[np.int_]
 
-    def node_ids_for(self, sequence_index: int, corner_type: int) -> NDArray[np.int_]:
+    def node_ids_for(self, sequence_index: int, orbit: int) -> NDArray[np.int_]:
         """Flat array of node IDs for a specific bin.
 
-        Each node i appears bins[(sequence_index, corner_type)][i] times.
+        Each node i appears bins[(sequence_index, orbit)][i] times.
         """
         ...
 
@@ -205,7 +208,8 @@ def cardinality_match(
     Args:
         degrees: Per-node degree sequence.
         sequences: Subgraph sequences.
-        decompositions: Per-sequence multinomial decompositions.
+        decompositions: Per-sequence multinomial decompositions
+            (orbit label to per-node count arrays).
         rng: Random generator for tie-breaking.
 
     Returns:
