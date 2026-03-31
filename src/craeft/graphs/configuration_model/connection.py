@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 from numpy.typing import NDArray
-from scipy.sparse import csr_matrix
+from scipy.sparse import coo_matrix, csr_matrix
 
 if TYPE_CHECKING:
     from craeft.graphs.configuration_model.sequence import (
@@ -74,11 +74,48 @@ class Connector:
         Raises:
             ValueError: If stub sum is odd.
         """
-        ...
+        total = int(singles.sum())
+
+        if total % 2 != 0:
+            msg = f"Stub sum must be even, got {total}"
+            raise ValueError(msg)
+
+        if total == 0:
+            return
+
+        stubs = np.repeat(np.arange(len(singles)), singles)
+        self._rng.shuffle(stubs)
+
+        rows = stubs[0::2]
+        cols = stubs[1::2]
+
+        for r, c in zip(rows.tolist(), cols.tolist()):
+            if r == c:
+                continue
+            edge = (min(r, c), max(r, c))
+            if edge in self._existing:
+                continue
+            self._existing.add(edge)
+            self._rows.append(r)
+            self._cols.append(c)
 
     def to_csr(self) -> csr_matrix:
         """Assemble all accumulated edges into a symmetric adjacency matrix."""
-        ...
+        if not self._rows:
+            return csr_matrix((self._n, self._n), dtype=np.int8)
+
+        rows = np.array(self._rows, dtype=np.int_)
+        cols = np.array(self._cols, dtype=np.int_)
+
+        sym_rows = np.concatenate([rows, cols])
+        sym_cols = np.concatenate([cols, rows])
+        data = np.ones(len(sym_rows), dtype=np.int8)
+
+        return coo_matrix(
+            (data, (sym_rows, sym_cols)),
+            shape=(self._n, self._n),
+            dtype=np.int8,
+        ).tocsr()
 
 
 class ConnectionError(Exception):
