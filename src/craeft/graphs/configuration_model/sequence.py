@@ -3,7 +3,7 @@
 Owns the full sequence lifecycle:
     - Types: SubgraphSequence, Allocation
     - Sampling: degree sequences, subgraph participation sequences
-    - Matching: greedy allocation of hyperstubs to nodes
+    - Allocation: greedy assignment of subgraph participations to nodes
 """
 
 from __future__ import annotations
@@ -59,12 +59,12 @@ class SubgraphSequence:
             n, self.distribution, rng, divisor=self.subgraph.num_nodes
         )
 
-    def _decompose(
+    def _split_by_orbit(
         self,
         sequence: NDArray[np.int_],
         rng: np.random.Generator,
     ) -> dict[int, NDArray[np.int_]]:
-        """Decompose a sampled sequence into per-orbit counts.
+        """Split a participation sequence into per-orbit counts.
 
         For vertex-transitive subgraphs (single orbit), returns the
         sequence unchanged. For non-transitive subgraphs, uses the
@@ -161,18 +161,20 @@ def _sample_sequence(
 
 
 # ---------------------------------------------------------------------------
-# Matching
+# Allocation
 # ---------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
 class Allocation:
-    """Result of greedy matching: hyperstub bins and remaining singles.
+    """Result of greedy subgraph allocation.
 
     Attributes:
         bins: Mapping from (sequence_index, orbit) to per-node
-            hyperstub counts.
-        singles: Per-node count of remaining single stubs.
+            participation counts for that orbit.
+        singles: Per-node count of remaining single stubs after
+            subgraph allocations are subtracted from the degree
+            sequence.
     """
 
     bins: dict[tuple[int, int], NDArray[np.int_]]
@@ -190,36 +192,37 @@ class Allocation:
         ...
 
 
-def cardinality_match(
+def allocate_subgraphs(
     degrees: NDArray[np.int_],
     sequences: list[SubgraphSequence],
     decompositions: list[dict[int, NDArray[np.int_]]],
     rng: np.random.Generator,
 ) -> Allocation:
-    """Assign hyperstub tuples to nodes via greedy cardinality matching.
+    """Greedily assign subgraph participations to nodes.
 
-    Computes the induced degree (stub cost) of each hyperstub tuple,
-    then greedily assigns tuples to eligible nodes in descending
-    order of cost. Nodes must have sufficient remaining degree and
-    not already be assigned to that subgraph.
+    Computes the stub cost of each node's orbit counts, then
+    assigns them to eligible nodes in descending order of cost.
+    Nodes must have sufficient remaining degree and not already
+    be assigned to that subgraph.
 
-    If a tuple cannot be placed, raises instead of silently shedding.
+    If a participation cannot be placed, raises instead of
+    silently shedding.
 
     Args:
         degrees: Per-node degree sequence.
         sequences: Subgraph sequences.
-        decompositions: Per-sequence multinomial decompositions
-            (orbit label to per-node count arrays).
+        decompositions: Per-sequence orbit splits (orbit label
+            to per-node count arrays).
         rng: Random generator for tie-breaking.
 
     Returns:
         Allocation with node-assigned bins and remaining singles.
 
     Raises:
-        AllocationError: If a hyperstub tuple cannot be placed.
+        AllocationError: If a participation cannot be placed.
     """
     ...
 
 
 class AllocationError(Exception):
-    """Raised when the greedy matching cannot place a hyperstub tuple."""
+    """Raised when a subgraph participation cannot be assigned to any node."""

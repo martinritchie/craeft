@@ -93,9 +93,9 @@ class CMAGraph(UndirectedGraph[CMAConfig]):
     """Network with prescribed degree sequence and subgraph structure.
 
     Generated via the Cardinality Matching Algorithm: samples and
-    decomposes subgraph sequences, greedily matches hyperstubs to
-    nodes, connects subgraph instances (checking for duplicates and
-    existing edges), then pairs remaining single stubs.
+    samples and splits subgraph sequences by orbit, greedily allocates
+    participations to nodes, connects subgraph instances (checking for
+    duplicates and existing edges), then pairs remaining single stubs.
 
     Retries from scratch on failure (dead-end configurations).
     """
@@ -111,7 +111,7 @@ class CMAGraph(UndirectedGraph[CMAConfig]):
         The algorithm:
             1. Sample participation sequences from each SubgraphSequence
             2. Multinomial decomposition per sequence
-            3. Greedy cardinality matching
+            3. Greedy subgraph allocation
             4. Connect subgraph instances (with multi-edge check)
             5. Pair remaining single stubs
             6. Assemble into adjacency matrix
