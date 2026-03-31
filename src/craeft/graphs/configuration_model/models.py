@@ -9,7 +9,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 from craeft.graphs.base import GraphConfig, UndirectedGraph
-from craeft.graphs.configuration_model.connection import connect_singles
+from craeft.graphs.configuration_model.connection import Connector
 from craeft.graphs.configuration_model.sequence import SubgraphSequence
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
 
@@ -56,8 +56,9 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
         config: ConfigModelConfig,
         rng: np.random.Generator,
     ) -> Self:
-        adjacency = connect_singles(config.degrees, rng)
-        return cls(adjacency)
+        connector = Connector(config.n, rng)
+        connector.connect_singles(config.degrees)
+        return cls(connector.to_csr())
 
     @property
     def clustering_coefficient(self) -> float:
