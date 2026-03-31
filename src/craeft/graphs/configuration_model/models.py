@@ -1,4 +1,4 @@
-"""Graph configs and classes for the configuration model family."""
+"""Graph config and class for the configuration model."""
 
 from __future__ import annotations
 
@@ -13,10 +13,6 @@ from craeft.graphs.configuration_model.connection import Connector
 from craeft.graphs.configuration_model.sequence import SubgraphSequence
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
 
-# ---------------------------------------------------------------------------
-# Vanilla configuration model
-# ---------------------------------------------------------------------------
-
 
 @dataclass(frozen=True)
 class ConfigModelConfig(GraphConfig):
@@ -26,9 +22,15 @@ class ConfigModelConfig(GraphConfig):
         n: Number of nodes.
         degrees: Per-node degree sequence. Length must equal n,
             values non-negative, sum must be even.
+        sequences: Subgraph sequences to embed. When empty, produces
+            a standard configuration model graph (edge-only).
+        max_retries: Maximum reset-and-retry attempts when subgraph
+            allocation or connection fails.
     """
 
     degrees: NDArray[np.int_]
+    sequences: tuple[SubgraphSequence, ...] = ()
+    max_retries: int = 100
 
     def __post_init__(self) -> None:
         if len(self.degrees) != self.n:
@@ -43,11 +45,16 @@ class ConfigModelConfig(GraphConfig):
 
 
 class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
-    """Random graph with a prescribed degree sequence.
+    """Random graph with a prescribed degree sequence and optional
+    subgraph structure.
 
-    Generated via stub pairing: each node contributes stubs equal
-    to its degree, stubs are randomly paired to form edges.
-    Self-loops and multi-edges are removed.
+    When no subgraph sequences are specified, generates a standard
+    configuration model graph via stub pairing. When sequences are
+    provided, splits them by orbit, greedily allocates participations
+    to nodes, connects subgraph instances (checking for duplicates
+    and existing edges), then pairs remaining single stubs.
+
+    Retries from scratch on failure (dead-end configurations).
     """
 
     @classmethod
@@ -56,62 +63,16 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
         config: ConfigModelConfig,
         rng: np.random.Generator,
     ) -> Self:
-        connector = Connector(config.n, rng)
-        connector.connect_singles(config.degrees)
-        return cls(connector.to_csr())
+        """Generate a configuration model graph.
 
-    @property
-    def clustering_coefficient(self) -> float:
-        return global_clustering_coefficient(self._adjacency)
+        Without subgraph sequences:
+            1. Pair stubs from the degree sequence
+            2. Remove self-loops and multi-edges
 
-
-# ---------------------------------------------------------------------------
-# CMA (Cardinality Matching Algorithm)
-# ---------------------------------------------------------------------------
-
-
-@dataclass(frozen=True)
-class CMAConfig(GraphConfig):
-    """Configuration for a CMA-generated graph.
-
-    Attributes:
-        n: Number of nodes.
-        degrees: Per-node degree sequence.
-        sequences: Subgraph sequences defining which subgraphs
-            to embed and their participation distributions.
-        max_retries: Maximum reset-and-retry attempts.
-    """
-
-    degrees: NDArray[np.int_]
-    sequences: tuple[SubgraphSequence, ...]
-    max_retries: int = 100
-
-    def __post_init__(self) -> None: ...
-
-
-class CMAGraph(UndirectedGraph[CMAConfig]):
-    """Network with prescribed degree sequence and subgraph structure.
-
-    Generated via the Cardinality Matching Algorithm: samples and
-    samples and splits subgraph sequences by orbit, greedily allocates
-    participations to nodes, connects subgraph instances (checking for
-    duplicates and existing edges), then pairs remaining single stubs.
-
-    Retries from scratch on failure (dead-end configurations).
-    """
-
-    @classmethod
-    def from_config(
-        cls,
-        config: CMAConfig,
-        rng: np.random.Generator,
-    ) -> Self:
-        """Generate a CMA graph.
-
-        The algorithm:
-            1. Sample participation sequences from each SubgraphSequence
-            2. Multinomial decomposition per sequence
-            3. Greedy subgraph allocation
+        With subgraph sequences:
+            1. Sample participation sequences
+            2. Split each by orbit
+            3. Greedily allocate to nodes
             4. Connect subgraph instances (with multi-edge check)
             5. Pair remaining single stubs
             6. Assemble into adjacency matrix
@@ -120,16 +81,22 @@ class CMAGraph(UndirectedGraph[CMAConfig]):
         up to config.max_retries times with fresh random state.
 
         Args:
-            config: CMA configuration.
+            config: Configuration model configuration.
             rng: Random number generator.
 
         Returns:
-            A CMAGraph instance.
+            A ConfigModelGraph instance.
 
         Raises:
             RuntimeError: If all retries exhausted.
         """
+        if not config.sequences:
+            connector = Connector(config.n, rng)
+            connector.connect_singles(config.degrees)
+            return cls(connector.to_csr())
+
         ...
 
     @property
-    def clustering_coefficient(self) -> float: ...
+    def clustering_coefficient(self) -> float:
+        return global_clustering_coefficient(self._adjacency)
