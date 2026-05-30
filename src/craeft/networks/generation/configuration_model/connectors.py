@@ -211,6 +211,44 @@ class Erased(Connector):
 ConnectorName = Literal["repeated", "refuse", "erased"]
 
 
+def connect_motif(
+    motif: Motif,
+    hyperstubs: NDArray[np.int_] | None,
+    bins: dict[int, NDArray[np.int_]] | None,
+    rng: np.random.Generator,
+    strategy: ConnectorName = "repeated",
+) -> tuple[NDArray[np.int_], NDArray[np.int_]]:
+    """Dispatch to flat or orbit-aware connector based on motif type.
+
+    For complete motifs, uses the flat connector with ``hyperstubs``.
+    For incomplete motifs, uses the orbit connector with ``bins``.
+
+    Args:
+        motif: The motif to instantiate.
+        hyperstubs: Flat array of node IDs (for complete motifs).
+        bins: Typed bins of node IDs (for incomplete motifs).
+        rng: Random generator.
+        strategy: Connection strategy name.
+
+    Returns:
+        Tuple of (rows, cols) edge arrays.
+    """
+    if motif.is_complete:
+        if hyperstubs is None:
+            return np.array([], dtype=np.int_), np.array([], dtype=np.int_)
+        connector = get_connector(strategy)
+        return connector.connect(hyperstubs, motif, rng)
+
+    from craeft.networks.generation.configuration_model.orbit_connector import (
+        get_orbit_connector,
+    )
+
+    if bins is None:
+        return np.array([], dtype=np.int_), np.array([], dtype=np.int_)
+    orbit = get_orbit_connector(strategy)
+    return orbit.connect_orbit(bins, motif, rng)
+
+
 def get_connector(name: ConnectorName) -> Connector:
     """Get a connector by name.
 
