@@ -1,7 +1,6 @@
-"""Re-export from craeft.graphs.metrics.clustering for backwards compatibility."""
+"""Graph metrics and structural analysis."""
 
 from craeft.graphs.metrics.clustering import (
-    SparseMatrix,
     count_triangles,
     global_clustering_coefficient,
     local_clustering,
@@ -9,7 +8,6 @@ from craeft.graphs.metrics.clustering import (
 )
 
 __all__ = [
-    "SparseMatrix",
     "count_triangles",
     "global_clustering_coefficient",
     "local_clustering",
