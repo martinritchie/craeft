@@ -1,0 +1,13 @@
+24 M. RITCHIE ET AL.
+
+![Complex contagion dynamics plot showing probability over time and final sizing for Random, UDA, and CMA network types](figure)
+
+Fig. 14. Complex contagion dynamics for network family **B**: the complex contagion algorithm had an initial seed of the epidemic with a fixed threshold of infection of 2.
+
+topology. For Figs. 13a and b, a trend of inhibited spread of infection is observed from the random to UDA to CMA networks. It has already been shown that clustering slows the spread of infection [5, 6], and we see that this effect dominates over higher assortativity, which usually leads to faster initial spread of the epidemic [37]. Similarly, Fig. 14, which shows the distribution of the final epidemic size for the complex contagion dynamics, reveals that (a) the higher clustering observed in the UDA networks fails to have a significant impact when compared with random networks, and (b) the CMA networks are significantly slow the pace of the epidemic as well as reduce its final size compared with both random and UDA networks. Given that the UDA and CMA algorithms target degree sequence and global clustering are identical the observed differences are explained by the combined effect of varying distributions of subgraph around nodes and varying prevalence of subgraphs (both of which are related to the local clustering coefficient distribution in the network).
+
+Taken together, our simulation data show that even though the proposed algorithms construct networks with identical degree sequence and global clustering, these networks can give rise to measurable differences in resulting epidemics, be it in time evolution or final outcome. With the exception of *SIS* and *SIR* epidemics on network family **A** (still with some small differences), we found significant differences in all other instances. A more systematic investigation of more network models and wider parameter range for the dynamics is needed but is left to future work.
+
+## 4. Discussion
+
+In this article, we have described two novel network generating algorithms that strictly preserve a given degree sequence whilst permitting control over the building blocks of the network and enabling the tuning of global clustering. We have compared these algorithms to one another as well as to the widely used Bay-Y rewiring algorithm. Using our algorithms we have empirically demonstrated that it is possible to create networks that are identical with respect to degree sequence and global clustering, yet elicit measurable differences in network metrics and in the outcome of dynamics simulations run on them. We have presented evidence to suggest that the methods sample from different areas of the network state space and that these sampling variations do matter.
