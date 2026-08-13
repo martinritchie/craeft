@@ -9,8 +9,15 @@ import numpy as np
 from numpy.typing import NDArray
 
 from craeft.graphs.base import GraphConfig, UndirectedGraph
-from craeft.graphs.configuration_model.connection import Connector
-from craeft.graphs.configuration_model.sequence import SubgraphSequence
+from craeft.graphs.configuration_model.connection import (
+    ConnectionError,
+    Connector,
+)
+from craeft.graphs.configuration_model.sequence import (
+    AllocationError,
+    SubgraphSequence,
+    allocate_subgraphs,
+)
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
 
 
@@ -95,7 +102,49 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
             connector.connect_singles(config.degrees)
             return cls(connector.to_csr())
 
-        ...
+        # Subgraph sequence pipeline
+        for _ in range(config.max_retries):
+            try:
+                connector = Connector(config.n, rng)
+                decompositions: list[dict[int, NDArray[np.int_]]] = []
+
+                # 1. Sample participation sequences and split by orbit
+                for seq in config.sequences:
+                    parts = seq.sample(config.n, rng)
+                    decomp = seq._split_by_orbit(parts, rng)
+                    decompositions.append(decomp)
+
+                # 2. Allocate subgraphs to nodes (verify degree budget)
+                allocation = allocate_subgraphs(
+                    degrees=config.degrees,
+                    sequences=list(config.sequences),
+                    decompositions=decompositions,
+                    rng=rng,
+                )
+
+                # 3. Connect subgraph instances
+                for seq_idx in range(len(config.sequences)):
+                    connector.connect_subgraph(
+                        sequence=config.sequences[seq_idx],
+                        allocation=allocation,
+                        sequence_index=seq_idx,
+                    )
+
+                # 4. Pair remaining single stubs
+                connector.connect_singles(allocation.singles)
+
+                # 5. Assemble into adjacency matrix
+                return cls(connector.to_csr())
+
+            except (AllocationError, ConnectionError, ValueError, RuntimeError):
+                # Retry with a fresh random state on any failure
+                continue
+
+        msg = (
+            f"Failed to generate graph after {config.max_retries} "
+            f"retries"
+        )
+        raise RuntimeError(msg)
 
     @property
     def clustering_coefficient(self) -> float:

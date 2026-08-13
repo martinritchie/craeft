@@ -1,102 +1,141 @@
 # Clustered Configuration Model
 
-The Clustered Configuration Model (CCM) extends the standard configuration
-model to generate networks with both a prescribed degree sequence *and* a
-target clustering coefficient $\phi$.
+The Clustered Configuration Model (CCM) generates networks with both a
+prescribed degree sequence *and* a target clustering coefficient $\phi$. It
+does this by embedding subgraph instances (motifs) into the network, then
+pairing remaining single stubs via the standard configuration model.
 
 !!! note "Reference"
-    The CCM algorithm is described in: Ritchie, M., Berthouze, L., & Kiss,
+    The core algorithm is described in: Ritchie, M., Berthouze, L., & Kiss,
     I. Z. (2014). Higher-order structure and epidemic dynamics in clustered
     networks. *Journal of Mathematical Biology*, 72(3), 483–511.
 
-## The problem
+    The orbital decomposition for non-vertex-transitive subgraphs is a generalisation
+    of the original paper's uniform-cardinality assumption, described in
+    `sequential-conditional-sampling.md`.
 
-The standard configuration model generates networks by randomly pairing
-"stubs" (half-edges). This produces networks with a given degree sequence
-but near-zero clustering — the probability that two neighbours of a node
-are themselves connected is vanishingly small for sparse networks.
+## Architecture
 
-Real networks (social, biological, infrastructure) exhibit significant
-clustering. The CCM addresses this by reserving a fraction of each node's
-stubs for participation in small, dense substructures (motifs) before
-pairing the remainder randomly.
+The configuration model is exposed through a **config → graph** pipeline:
+
+```python
+ConfigModelConfig(n, degrees, sequences) → ConfigModelGraph.from_config() → CSR adjacency
+```
+
+This replaces the older `configuration_model(degrees, phi)` function API with
+a two-tier architecture:
+
+- **Vanilla CM** — when `sequences` is empty, pairs stubs from the degree sequence
+- **Clustered CM** — when `sequences` contains one or more `SubgraphSequence`
+  entries, embeds subgraph instances before pairing remaining singles
 
 ## Algorithm pipeline
 
-The CCM proceeds in five steps:
+### Vanilla configuration model (no sequences)
 
-### Step 1: Stub allocation
+1. Shuffle and pair stubs from the degree sequence
+2. Skip self-loops and multi-edges
+3. Assemble into a symmetric adjacency matrix
 
-Each node $i$ receives $k_i$ stubs (one per unit of degree), sampled from
-the target degree distribution.
+### Clustered model (with subgraph sequences)
 
-### Step 2: Partition into corners and singles
+1. **Sample** — for each `SubgraphSequence`, draw a participation sequence from
+   the specified distribution (e.g. `poisson(0.3)`)
+2. **Split by orbit** — for non-vertex-transitive subgraphs (e.g. diamond, bowtie),
+   assign each node's participations to specific orbit roles using sequential
+   conditional sampling from a shared urn. Vertex-transitive subgraphs (triangle,
+   square, K4) skip this step.
+3. **Allocate** — verify that every node's total subgraph stub cost (sum over
+   orbits of count × orbit_degree) fits within its degree budget
+4. **Connect subgraphs** — for each subgraph type, draw concrete nodes from
+   per-orbit pools, check for duplicate nodes and existing edges, and form the
+   subgraph's internal edges
+5. **Pair singles** — pair remaining single stubs, avoiding edges already formed
+   by subgraphs
+6. **Assemble** — combine all edges into a symmetric CSR adjacency matrix
 
-For each node, stubs are partitioned into two pools:
+On any failure (degree budget exceeded, unresolvable collisions), the pipeline
+retries from step 1 with a fresh sample, up to `max_retries` times.
 
-- **Corners** — stubs allocated to motif participation. The number of
-  corners is drawn from $\text{Binomial}(\lfloor k_i / c \rfloor, \phi)$,
-  where $c$ is the cardinality of the motif (the degree of each corner
-  within the motif).
-- **Singles** — remaining stubs, paired via the standard configuration model.
+## Orbit-aware decomposition
 
-The parameter $\phi$ controls the expected fraction of stubs allocated to
-motifs, and thereby the resulting clustering coefficient.
+A key contribution over the original paper is support for **non-vertex-transitive
+subgraphs** — subgraphs where not all vertices are equivalent under automorphism.
 
-### Step 3: Form motif instances
+| Subgraph | Orbits | Transitive? |
+|----------|--------|-------------|
+| Triangle (G2), Square (G5), K4 (G8), K5 (G29) | 1 | Yes |
+| Diamond (G7) | 2 (hubs, leaves) | No |
+| Bowtie (G14), House (G17) | 2–3 | No |
 
-Corner stubs are grouped and connected according to the motif's adjacency
-structure. Three strategies handle collisions (when the same node appears
-twice in a group):
-
-| Strategy | Behaviour | Trade-off |
-|----------|-----------|-----------|
-| **Repeated** | Resample colliding groups individually | Fast, slightly biased |
-| **Refuse** | Reject entire batch on any collision | Unbiased, expensive at high density |
-| **Erased** | Ignore collisions, remove duplicates post-hoc | Fastest, loses edges |
-
-### Step 4: Pair single stubs
-
-Remaining single stubs are paired using the standard configuration model,
-avoiding edges that were already created during motif formation.
-
-### Step 5: Assemble
-
-Motif edges and single edges are combined, symmetrised, and cleaned
-(self-loops removed, multi-edges clipped) to produce the final adjacency
-matrix.
-
-## Degree-5 optimisation
-
-For homogeneous degree-5 networks, the CCM uses an analytical allocation
-that mixes K4 cliques and triangles for higher clustering accuracy:
-
-$$\phi = \frac{2 p_3}{5}$$
-
-where $p_3$ is the probability that a node participates in both a K4
-corner and a triangle corner. This achieves higher clustering than the
-general triangle-only fallback.
-
-## Uniform cardinality constraint
-
-The current implementation requires **uniform cardinality** — all corners
-in the motif must have the same degree within the motif. This means
-complete graphs (G2/triangle, G8/K4, G29/K5) and cycles (G5, G12, C6)
-are supported, but mixed-cardinality motifs like G7 (diamond) and G14
-(bowtie) raise `MixedCardinalityError`.
+For vertex-transitive subgraphs all vertices are equivalent, so the split step
+is a no-op. For non-transitive subgraphs, the sequential conditional sampling
+algorithm ensures exact orbit proportions without global rejection. See
+`sequential-conditional-sampling.md` for the full algorithm.
 
 ## Usage
 
 ```python
 import numpy as np
-from craeft import configuration_model, global_clustering_coefficient
+from scipy.stats import poisson
+
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
 
 rng = np.random.default_rng(42)
-degrees = np.full(1000, 5)
 
-# phi controls clustering: 0.0 = unclustered, higher = more clustered
-for phi in [0.0, 0.1, 0.2, 0.3]:
-    adj = configuration_model(degrees, phi=phi, rng=rng)
-    cc = global_clustering_coefficient(adj)
-    print(f"phi={phi:.1f} -> clustering={cc:.3f}")
+# --- Vanilla configuration model ---
+degrees = np.full(500, 5)
+config = ConfigModelConfig(n=500, degrees=degrees)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Vanilla CM clustering: {graph.clustering_coefficient:.4f}")
+
+# --- Clustered model with triangles ---
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.2))
+
+config = ConfigModelConfig(
+    n=500,
+    degrees=degrees,
+    sequences=(tri_seq,),
+    max_retries=100,
+)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Clustered CM clustering: {graph.clustering_coefficient:.4f}")
+
+# --- Multiple subgraph types ---
+diamond = Subgraph(adjacency=np.array([[0,1,1,1],[1,0,1,0],[1,1,0,1],[1,0,1,0]]))
+diamond_seq = SubgraphSequence(subgraph=diamond, distribution=poisson(0.1))
+
+config = ConfigModelConfig(
+    n=500,
+    degrees=degrees,
+    sequences=(tri_seq, diamond_seq),
+    max_retries=200,
+)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Triangle+diamond clustering: {graph.clustering_coefficient:.4f}")
+
+# Access graph properties
+print(f"Edges: {graph.n_edges}")
+print(f"Degrees: {graph.degrees}")
+adj = graph.to_csr()  # scipy sparse CSR matrix
 ```
+
+## Retry behaviour
+
+The subgraph pipeline uses rejection sampling at multiple levels:
+
+1. **Participation sampling** — the distribution may produce values incompatible
+   with the degree budget (e.g. a node told to participate 5× in triangles with
+   only degree 4). Guarded by `max_iterations` in `_sample_sequence`.
+2. **Orbit splitting** — the sequential urn algorithm detects infeasible splits
+   (e.g. insufficient hub slots remaining). Raises `ValueError`.
+3. **Allocation** — the degree budget check catches overall excess. Raises
+   `AllocationError`.
+4. **Connection** — subgraph connection detects unresolvable collisions (duplicate
+   nodes, existing edges). Raises `ConnectionError`.
+
+All are caught by the outer retry loop in `ConfigModelGraph.from_config`, which
+resamples participation sequences and retries up to `max_retries` times.

@@ -35,15 +35,33 @@ def _sample_sequence(
     distribution: rv_discrete,
     rng: np.random.Generator,
     divisor: int,
+    max_value: int | None = None,
+    max_iterations: int = 10000,
 ) -> NDArray[np.int_]:
     """Sample a sequence with bounded values and divisible sum.
 
-    Rejection samples until all values are in [0, n-1] and the
-    sum is divisible by divisor.
-    """
-    max_value = n - 1
+    Rejection samples until all values are non-negative, no value
+    exceeds max_value (when set), and the sum is divisible by
+    divisor. Raises after max_iterations rejections.
 
-    while True:
+    Args:
+        n: Sequence length.
+        distribution: Frozen discrete distribution.
+        rng: Random number generator.
+        divisor: Target divisor for the sum.
+        max_value: Upper bound per value. Defaults to n - 1.
+        max_iterations: Maximum attempts before raising.
+
+    Returns:
+        Array of n non-negative integers.
+
+    Raises:
+        RuntimeError: If max_iterations exhausted.
+    """
+    if max_value is None:
+        max_value = n - 1
+
+    for _ in range(max_iterations):
         values = distribution.rvs(size=n, random_state=rng)
         if values.min() < 0:
             continue
@@ -52,3 +70,9 @@ def _sample_sequence(
         if int(values.sum()) % divisor != 0:
             continue
         return values
+
+    msg = (
+        f"Failed to sample valid sequence after {max_iterations} "
+        f"attempts (n={n}, max_value={max_value}, divisor={divisor})"
+    )
+    raise RuntimeError(msg)

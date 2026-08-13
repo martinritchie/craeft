@@ -4,12 +4,15 @@ import numpy as np
 import pytest
 from scipy.stats import poisson
 
-from craeft.graphs.base import UndirectedGraph
+from craeft.graphs.base import Subgraph, UndirectedGraph
 from craeft.graphs.configuration_model import (
     ConfigModelConfig,
     ConfigModelGraph,
 )
-from craeft.graphs.configuration_model.sequence import sample_degree_sequence
+from craeft.graphs.configuration_model.sequence import (
+    SubgraphSequence,
+    sample_degree_sequence,
+)
 
 # ---------------------------------------------------------------------------
 # Config validation
@@ -149,3 +152,113 @@ class TestConfigModelPipeline:
         config = ConfigModelConfig(n=500, degrees=degrees)
         graph = ConfigModelGraph.from_config(config, rng)
         assert abs(graph.degrees.mean() - target) < 1.0
+
+
+# ---------------------------------------------------------------------------
+# Subgraph sequence pipeline
+# ---------------------------------------------------------------------------
+
+
+TRIANGLE_ADJ = np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]])
+
+
+def _tri_seq(lam: float = 0.3) -> SubgraphSequence:
+    from craeft.graphs.base import Subgraph  # noqa: PLC0415
+    return SubgraphSequence(
+        subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+        distribution=poisson(lam),
+    )
+
+
+class TestConfigModelWithSubgraphs:
+    """End-to-end generation with subgraph sequences."""
+
+    def test_triangle_sequence_generates_valid_graph(self) -> None:
+        rng = np.random.default_rng(42)
+        degrees = np.full(30, 4, dtype=np.int_)
+        config = ConfigModelConfig(
+            n=30,
+            degrees=degrees,
+            sequences=(_tri_seq(0.25),),
+            max_retries=200,
+        )
+        graph = ConfigModelGraph.from_config(config, rng)
+        assert graph.n_nodes == 30
+        assert graph.n_edges > 0
+        assert isinstance(graph, UndirectedGraph)
+        csr = graph.to_csr()
+        assert (csr - csr.T).nnz == 0
+        assert np.all(csr.diagonal() == 0)
+
+    def test_triangle_produces_higher_clustering(self) -> None:
+        """With enough triangles, clustering should exceed vanilla CM."""
+        rng = np.random.default_rng(99)
+        n = 40
+        tri_seq_strong = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(0.5),
+        )
+        degrees = np.full(n, 5, dtype=np.int_)
+
+        clustered = ConfigModelGraph.from_config(
+            ConfigModelConfig(
+                n=n,
+                degrees=degrees,
+                sequences=(tri_seq_strong,),
+                max_retries=200,
+            ),
+            rng,
+        )
+        # With triangle subgraphs, clustering should be measurably higher
+        # than the near-zero clustering of vanilla CM
+        assert clustered.clustering_coefficient > 0.05
+
+    def test_reproducibility_with_sequences(self) -> None:
+        degrees = np.full(20, 4, dtype=np.int_)
+        config = ConfigModelConfig(
+            n=20,
+            degrees=degrees,
+            sequences=(_tri_seq(),),
+            max_retries=200,
+        )
+        g1 = ConfigModelGraph.from_config(config, np.random.default_rng(42))
+        g2 = ConfigModelGraph.from_config(config, np.random.default_rng(42))
+        assert g1 == g2
+
+    def test_retry_exhaustion_raises(self) -> None:
+        """Impossibly high participation should exhaust retries."""
+        from craeft.graphs.base import Subgraph  # noqa: PLC0415
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(10),  # way too many
+        )
+        degrees = np.full(6, 3, dtype=np.int_)  # degree 3 can't support 10*2 stubs
+        config = ConfigModelConfig(
+            n=6,
+            degrees=degrees,
+            sequences=(seq,),
+            max_retries=5,
+        )
+        with pytest.raises(RuntimeError, match="retries"):
+            ConfigModelGraph.from_config(config, np.random.default_rng(42))
+
+
+class TestAllocationErrorDetection:
+    """Allocation correctly detects degree budget violations."""
+
+    def test_budget_exceeded_raises(self) -> None:
+        from craeft.graphs.base import Subgraph  # noqa: PLC0415
+        from craeft.graphs.configuration_model.sequence import (
+            AllocationError,
+            allocate_subgraphs,
+        )
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(1),
+        )
+        # Decomposition requires 2*2=4 stubs per node, but degree is only 3
+        degrees = np.array([3, 3, 3, 3], dtype=np.int_)
+        parts = np.array([2, 2, 2, 2], dtype=np.int_)  # 4 nodes * 2 = 8 total
+        decomp = seq._split_by_orbit(parts, np.random.default_rng(42))
+        with pytest.raises(AllocationError, match="exceeded"):
+            allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(42))

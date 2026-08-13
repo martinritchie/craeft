@@ -47,20 +47,115 @@ class Connector:
     ) -> None:
         """Form edges for one subgraph from its allocated bins.
 
-        Populates typed bins, shuffles, pops groups of nodes,
-        checks for duplicates and existing edges. Reshuffles
-        on collision. Accumulates edges and updates existing set.
+        For each vertex position in the subgraph, determines its
+        orbit and draws a concrete node from that orbit's pool.
+        Shuffles pools independently, then pops vertices in order
+        to form each instance. Rejects groups with duplicate nodes
+        or existing edges.
+
+        Accumulates edges and updates the existing-edges set.
 
         Args:
             sequence: The subgraph sequence being connected.
-            allocation: Subgraph allocation from greedy assignment.
+            allocation: Subgraph allocation with per-orbit node bins.
             sequence_index: Index of this sequence in the allocation.
             max_attempts: Maximum consecutive failures before raising.
 
         Raises:
             ConnectionError: If max_attempts exceeded.
         """
-        ...
+        orbit_ids = sorted(allocation.bins)
+        this_bin_keys = [
+            k for k in orbit_ids if k[0] == sequence_index
+        ]
+
+        if not this_bin_keys:
+            return  # no bins for this sequence
+
+        # Collect per-orbit node pools
+        orbit_pools: dict[int, list[int]] = {}
+        for key in this_bin_keys:
+            _, orbit = key
+            orbit_pools[orbit] = allocation.node_ids_for(*key).tolist()
+
+        # Compute number of instances from any non-empty pool
+        num_instances = next(
+            (len(pool) // sequence.orbit_sizes[o]
+             for o, pool in orbit_pools.items() if pool),
+            0,
+        )
+
+        if num_instances == 0:
+            return
+
+        # Verify each orbit pool has exactly sizes[o] * num_instances nodes
+        sizes = sequence.orbit_sizes
+        for o, pool in orbit_pools.items():
+            expected = sizes[o] * num_instances
+            if len(pool) != expected:
+                msg = (
+                    f"Orbit {o} pool size {len(pool)} != "
+                    f"sizes[{o}]({sizes[o]}) * {num_instances}"
+                )
+                raise ConnectionError(msg)
+
+        # Vertex → orbit mapping
+        vertex_orbit = sequence.orbits  # list: orbit label per vertex
+
+        attempts = 0
+        while attempts < max_attempts:
+            # Shuffle each orbit pool independently
+            for pool in orbit_pools.values():
+                if pool:
+                    self._rng.shuffle(pool)
+
+            # Copy pools so we can restore on failure
+            working_pools = {
+                o: list(pool) for o, pool in orbit_pools.items()
+            }
+
+            collision = False
+            for _ in range(num_instances):
+                group = np.empty(len(vertex_orbit), dtype=np.int_)
+                for v, orb in enumerate(vertex_orbit):
+                    group[v] = working_pools[orb].pop()
+
+                # Check for duplicate nodes within the group
+                if len(set(group.tolist())) < len(group):
+                    collision = True
+                    break
+
+                # Check for existing edges
+                rows, cols = sequence.edges_for(group)
+                for r, c in zip(rows, cols):
+                    edge = (min(r, c), max(r, c))
+                    if edge in self._existing:
+                        collision = True
+                        break
+                if collision:
+                    break
+
+            if not collision:
+                # Commit: record edges from the shuffled pools
+                for _ in range(num_instances):
+                    group = np.empty(len(vertex_orbit), dtype=np.int_)
+                    for v, orb in enumerate(vertex_orbit):
+                        group[v] = orbit_pools[orb].pop()
+                    rows, cols = sequence.edges_for(group)
+                    for r, c in zip(rows, cols):
+                        edge = (min(r, c), max(r, c))
+                        self._existing.add(edge)
+                        self._rows.append(r)
+                        self._cols.append(c)
+                break
+
+            attempts += 1
+
+        if attempts >= max_attempts:
+            raise ConnectionError(
+                f"Failed to connect subgraph after {max_attempts} "
+                f"consecutive collisions"
+            )
 
     def connect_singles(self, singles: NDArray[np.int_]) -> None:
         """Pair remaining single stubs.

@@ -76,6 +76,7 @@ nav:
   - Getting Started: getting-started.md
   - Concepts:
       - Clustered Configuration Model: concepts/ccm.md
+      - Sequential Conditional Sampling: concepts/sequential-conditional-sampling.md
       - Motifs & Notation: concepts/motifs.md
       - Gillespie Algorithm: concepts/gillespie.md
   - API Reference:

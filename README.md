@@ -18,42 +18,46 @@ uv add craeft
 
 | Interface | Description |
 |-----------|-------------|
-| `NetworkGenerator` | Protocol for network generation — `generate(rng) -> csr_matrix` |
+| `GraphConfig` / `BaseGraph` | Config → graph pipeline with CSR-backed adjacency |
+| `SubgraphSequence` | Subgraph + participation distribution for clustered models |
 | `ContinuousTimeProcess` | ABC for any CTMC — defines `rates()`, `execute()`, `trajectory()` |
-| `ProcessFactory` | ABC for creating fresh process instances per realisation |
 | `EpidemicSimulator` | Protocol for running ensemble simulations on a network |
-
-All generators are frozen dataclasses (stateless, picklable) and all
-simulation is driven through the generic Gillespie engine.
 
 ## Quick start
 
 ```python
 import numpy as np
-from craeft import configuration_model, global_clustering_coefficient
+from scipy.stats import poisson
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
 
 rng = np.random.default_rng(42)
 degrees = np.full(500, 5)
 
-# Unclustered
-adj = configuration_model(degrees, rng=rng)
-print(global_clustering_coefficient(adj))  # ~0.0
+# Vanilla configuration model (no subgraphs → near-zero clustering)
+config = ConfigModelConfig(n=500, degrees=degrees)
+graph = ConfigModelGraph.from_config(config, rng)
+print(graph.clustering_coefficient)  # ~0.0
 
-# With clustering
-adj = configuration_model(degrees, phi=0.2, rng=rng)
-print(global_clustering_coefficient(adj))  # ~0.2
+# Clustered model with triangle subgraphs
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.2))
+config = ConfigModelConfig(n=500, degrees=degrees, sequences=(tri_seq,))
+graph = ConfigModelGraph.from_config(config, rng)
+print(graph.clustering_coefficient)  # > 0.0
+
+adj = graph.to_csr()  # scipy sparse CSR matrix
 ```
 
 ## Network generators
 
 | Generator | What it does |
 |-----------|-------------|
-| `configuration_model(degrees, phi)` | Standard or clustered configuration model |
-| `random_graph(n, p)` | Erdos-Renyi G(n, p) |
+| `ConfigModelGraph.from_config()` | Standard or clustered configuration model with orbit-aware subgraph embedding |
+| `ErdosRenyiGraph.from_config()` | Erdos-Renyi G(n, p) |
 | `big_v_rewire(adj, target_clustering)` | Degree-preserving rewiring to increase clustering |
 | `motif_decomposition(n, clique_size, target_clustering)` | Start from cliques, rewire down to target |
-
-All return scipy `csr_matrix` adjacency matrices.
 
 ## Simulation
 
