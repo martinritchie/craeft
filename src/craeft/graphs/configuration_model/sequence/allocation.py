@@ -30,7 +30,8 @@ class Allocation:
     def node_ids_for(self, sequence_index: int, orbit: int) -> NDArray[np.int_]:
         """Flat array of node IDs for a specific bin.
 
-        Each node i appears bins[(sequence_index, orbit)][i] times.
+        Each node appears ``counts[node_index]`` times, where ``counts``
+        is the per-node array at ``bins[(sequence_index, orbit)]``.
         """
         counts = self.bins[(sequence_index, orbit)]
         return np.repeat(np.arange(len(counts)), counts).astype(np.int_)
