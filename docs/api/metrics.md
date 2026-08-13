@@ -1,9 +1,15 @@
 # Metrics
 
-Network structural analysis: clustering coefficients, triangle counting,
-and connectivity.
+Network structural analysis: clustering coefficients and connectivity.
 
-## Clustering
+## Clustering (new API)
+
+::: craeft.graphs.metrics.clustering
+    options:
+      members:
+        - global_clustering_coefficient
+
+## Clustering (legacy)
 
 ::: craeft.networks.metrics.clustering
     options:
@@ -13,7 +19,7 @@ and connectivity.
         - local_clustering
         - global_clustering_coefficient
 
-## Connectivity
+## Connectivity (legacy)
 
 ::: craeft.networks.metrics.connectivity
     options:

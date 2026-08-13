@@ -22,25 +22,28 @@ documentation.
 | **degree** | Number of edges incident to a node | connectivity |
 | **degree sequence** | Ordered list of all node degrees in the network | |
 
-### Motifs
+### Subgraphs and orbits
 
 | Standard term | Definition | Avoid |
 |---------------|------------|-------|
-| **motif** | A small, recurring substructure pattern in a network | subgraph (except for the mathematical concept) |
-| **motif instance** | A specific occurrence of a motif pattern using particular nodes | subgraph instance |
-| **corner** | A node's participation slot in a motif instance | position, vertex |
-| **corner type** | Classification of corners by their degree within the motif | |
-| **cardinality** | The degree of a corner within its motif (edges contributed) | |
+| **subgraph** | A small, recurring pattern defined by its adjacency matrix | motif (legacy term) |
+| **subgraph instance** | A specific occurrence of a subgraph pattern using particular nodes | motif instance |
+| **orbit** | A set of vertices in the subgraph that are equivalent under automorphism — all vertices in an orbit have the same degree within the subgraph and receive the same structural role | corner type (legacy) |
+| **orbit degree** | The degree of a vertex within the subgraph, identical for all vertices in the same orbit | cardinality (legacy) |
+| **orbit size** | The number of vertices belonging to a given orbit | |
+| **vertex-transitive** | All vertices belong to a single orbit (complete graphs, cycles) | uniform cardinality (legacy) |
+| **participation count** | How many times a node participates in a given subgraph type | |
+| **participation sequence** | Per-node participation counts for a subgraph type | |
 
 ### Algorithm components
 
 | Standard term | Definition | Context |
 |---------------|------------|---------|
 | **stub** | A "half-edge" representing one unit of degree capacity | Configuration model |
-| **hyperstub** | A stub allocated to participate in motif formation | CCM algorithm |
-| **single** | A remaining stub after motif allocation | CCM algorithm |
-| **connector** | Strategy for forming motif instances from hyperstubs | CCM Step 3 |
-| **pairer** | Strategy for pairing single stubs into edges | CCM Step 4 |
+| **single** | A remaining stub after subgraph allocation | CMA algorithm |
+| **connector** | Stateful edge assembler that forms subgraph instances and pairs singles | CMA pipeline |
+| **urn** | The shared pool of orbit slots in sequential conditional sampling | Orbit splitting |
+| **allocation** | The result of verifying subgraph participations fit within degree budgets | CMA pipeline |
 
 ## Parameter naming
 
@@ -49,8 +52,8 @@ documentation.
 | Parameter | Symbol | Description | Range |
 |-----------|--------|-------------|-------|
 | `n` | n | Number of nodes | positive integer |
-| `phi` | $\phi$ | Target clustering coefficient | [0, 1] |
 | `p` | p | Edge probability (Erdos-Renyi) | [0, 1] |
+| `max_retries` | — | Maximum reset-and-retry attempts when subgraph allocation fails | positive integer |
 
 ### Epidemic simulation (SIR)
 
@@ -60,10 +63,10 @@ documentation.
 | `gamma` | $\gamma$ | Recovery rate | $[0, \infty)$ |
 | `initial_infected` | — | Number of initially infected nodes | positive integer |
 
-## Motif naming
+## Subgraph naming
 
-Motifs use [Pržulj graphlet notation](concepts/motifs.md) (G0-G29).
-For motifs beyond 5 nodes, standard graph-theoretic notation is used
+Subgraphs use [Pržulj graphlet notation](concepts/motifs.md) (G0-G29).
+For subgraphs beyond 5 nodes, standard graph-theoretic notation is used
 (C_n for cycles, K_n for complete graphs).
 
 ## Legacy terminology
@@ -74,7 +77,11 @@ For motifs beyond 5 nodes, standard graph-theoretic notation is used
 | netsubgraph | craeft | First package name |
 | motifnet | craeft | Second package name |
 | graph | network | Use "network" in code |
-| subgraph | motif | Use "motif" for the recurring pattern concept |
+| motif | subgraph | Use "subgraph" for the recurring pattern concept |
+| corner / corner type | orbit | Use "orbit" for structurally equivalent vertex groups |
+| cardinality | orbit degree | Use "orbit degree" |
+| uniform cardinality | vertex-transitive | Use "vertex-transitive" |
+| phi ($\phi$) | — | Deprecated; now controlled via participation distributions |
 | TRIANGLE | G2 | Use Pržulj notation |
 | TOAST / BOWTIE | G14 | Use Pržulj notation |
 | K3 | G2 | Use Pržulj notation |
