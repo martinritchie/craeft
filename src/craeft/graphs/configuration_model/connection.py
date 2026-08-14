@@ -115,6 +115,14 @@ class Connector:
             }
 
             collision = False
+            # Edges proposed by earlier instances within this same
+            # attempt aren't in self._existing yet (that's only
+            # updated on commit) — without tracking them separately,
+            # two instances of a subgraph within one attempt could
+            # silently reuse the same edges (e.g. two triangle
+            # instances drawing the same 3 nodes), producing
+            # multi-edges instead of the intended collision/retry.
+            proposed: set[tuple[int, int]] = set()
             for _ in range(num_instances):
                 group = np.empty(len(vertex_orbit), dtype=np.int_)
                 for v, orb in enumerate(vertex_orbit):
@@ -125,15 +133,19 @@ class Connector:
                     collision = True
                     break
 
-                # Check for existing edges
+                # Check for existing edges (from prior connector
+                # calls, or from earlier instances this attempt)
                 rows, cols = sequence.edges_for(group)
-                for r, c in zip(rows, cols):
-                    edge = (min(r, c), max(r, c))
-                    if edge in self._existing:
-                        collision = True
-                        break
-                if collision:
+                instance_edges = [
+                    (min(r, c), max(r, c)) for r, c in zip(rows, cols)
+                ]
+                if any(
+                    edge in self._existing or edge in proposed
+                    for edge in instance_edges
+                ):
+                    collision = True
                     break
+                proposed.update(instance_edges)
 
             if not collision:
                 # Commit: record edges from the shuffled pools

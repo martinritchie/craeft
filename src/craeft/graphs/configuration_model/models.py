@@ -103,14 +103,42 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
             return cls(connector.to_csr())
 
         # Subgraph sequence pipeline
+        last_exc: Exception | None = None
         for _ in range(config.max_retries):
             try:
                 connector = Connector(config.n, rng)
                 decompositions: list[dict[int, NDArray[np.int_]]] = []
 
                 # 1. Sample participation sequences and split by orbit
+                #
+                # Ticket 003: sampling participation with no reference to
+                # each node's degree budget fails almost surely once the
+                # participation distribution has spread comparable to the
+                # degree distribution — the allocation check below would
+                # reject nearly every draw. We derive a conservative
+                # per-node cap from the *worst-case* stub cost: a node's
+                # eventual orbit split isn't known until after sampling
+                # (``_split_by_orbit`` runs next), so we can't know which
+                # orbit a given participation will land in. Using the
+                # subgraph's most expensive orbit (max(orbit_degrees))
+                # as the per-participation cost is always safe — no
+                # possible orbit split can then exceed the node's degree.
+                # This is conservative rather than exact: when a sequence
+                # is not vertex-transitive, cheaper orbits will
+                # under-use the true budget, and when multiple sequences
+                # share one degree budget, each sequence is capped
+                # independently against the *full* degree rather than a
+                # fair share of it. Both are acceptable because
+                # ``allocate_subgraphs`` still performs the authoritative
+                # cross-sequence check and raises ``AllocationError``
+                # (caught below, triggering a retry) if the combined
+                # cost from multiple sequences is still too high — this
+                # cap only needs to fix the dominant single-sequence
+                # failure mode, not guarantee success in every case.
                 for seq in config.sequences:
-                    parts = seq.sample(config.n, rng)
+                    max_stub_cost = max(seq.orbit_degrees.values())
+                    max_per_node = config.degrees // max_stub_cost
+                    parts = seq.sample(config.n, rng, max_per_node=max_per_node)
                     decomp = seq._split_by_orbit(parts, rng)
                     decompositions.append(decomp)
 
@@ -136,15 +164,16 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
                 # 5. Assemble into adjacency matrix
                 return cls(connector.to_csr())
 
-            except (AllocationError, ConnectionError, ValueError, RuntimeError):
+            except (AllocationError, ConnectionError, ValueError, RuntimeError) as exc:
                 # Retry with a fresh random state on any failure
+                last_exc = exc
                 continue
 
         msg = (
             f"Failed to generate graph after {config.max_retries} "
             f"retries"
         )
-        raise RuntimeError(msg)
+        raise RuntimeError(msg) from last_exc
 
     @property
     def clustering_coefficient(self) -> float:

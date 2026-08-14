@@ -226,21 +226,57 @@ class TestConfigModelWithSubgraphs:
         assert g1 == g2
 
     def test_retry_exhaustion_raises(self) -> None:
-        """Impossibly high participation should exhaust retries."""
+        """Structurally impossible subgraph placement should exhaust retries.
+
+        n=3 with a 3-node subgraph admits exactly one possible instance
+        (there is only one way to choose all 3 of 3 labelled nodes), so
+        forcing 2+ instances is a guaranteed connection-time failure on
+        every retry, independent of the participation-capping fix in
+        ticket 003 (which only bounds *how much* a node participates,
+        not whether 3 nodes can host two distinct triangles).
+        """
         from craeft.graphs.base import Subgraph  # noqa: PLC0415
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
-            distribution=poisson(10),  # way too many
+            distribution=poisson(10),  # clipped down, but still >= 2
         )
-        degrees = np.full(6, 3, dtype=np.int_)  # degree 3 can't support 10*2 stubs
+        # degree 6 comfortably covers cost=2*participation, so the
+        # failure is forced at the connection step, not allocation.
+        degrees = np.full(3, 6, dtype=np.int_)
         config = ConfigModelConfig(
-            n=6,
+            n=3,
             degrees=degrees,
             sequences=(seq,),
             max_retries=5,
         )
         with pytest.raises(RuntimeError, match="retries"):
             ConfigModelGraph.from_config(config, np.random.default_rng(42))
+
+    def test_retry_exhaustion_chains_cause(self) -> None:
+        """The retry-exhaustion RuntimeError must chain the real cause.
+
+        Before ticket 003, `from_config`'s retry loop swallowed the
+        underlying AllocationError/ConnectionError/ValueError, leaving
+        `max_retries` exhaustion undebuggable.
+        """
+        from craeft.graphs.base import Subgraph  # noqa: PLC0415
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(10),
+        )
+        degrees = np.full(3, 6, dtype=np.int_)
+        config = ConfigModelConfig(
+            n=3,
+            degrees=degrees,
+            sequences=(seq,),
+            max_retries=5,
+        )
+        with pytest.raises(RuntimeError) as exc_info:
+            ConfigModelGraph.from_config(config, np.random.default_rng(42))
+
+        cause = exc_info.value.__cause__
+        assert cause is not None
+        assert isinstance(cause, Exception)
 
 
 class TestAllocationErrorDetection:
@@ -262,3 +298,76 @@ class TestAllocationErrorDetection:
         decomp = seq._split_by_orbit(parts, np.random.default_rng(42))
         with pytest.raises(AllocationError, match="exceeded"):
             allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(42))
+
+    def test_allocation_error_reports_fraction_over_budget(self) -> None:
+        """The error message must be self-explanatory: how many nodes,
+        what fraction, the worst offender, and the mean cost vs. mean
+        degree — not just the bare fact that something was exceeded.
+        """
+        from craeft.graphs.base import Subgraph  # noqa: PLC0415
+        from craeft.graphs.configuration_model.sequence import (
+            AllocationError,
+            allocate_subgraphs,
+        )
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(1),
+        )
+        # Every node costs 2*2=4 stubs but only has degree 3: all 4
+        # of 4 nodes are over budget (100%).
+        degrees = np.array([3, 3, 3, 3], dtype=np.int_)
+        parts = np.array([2, 2, 2, 2], dtype=np.int_)
+        decomp = seq._split_by_orbit(parts, np.random.default_rng(42))
+        with pytest.raises(AllocationError) as exc_info:
+            allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(42))
+
+        msg = str(exc_info.value)
+        assert "4 of 4" in msg
+        assert "100.0%" in msg
+        assert "mean" in msg.lower()
+
+
+# ---------------------------------------------------------------------------
+# Ticket 003: participation must respect the degree budget by construction
+# ---------------------------------------------------------------------------
+
+
+def _cycle_subgraph(length: int) -> Subgraph:
+    """A length-`length` cycle: every vertex has within-subgraph degree 2."""
+    adjacency = np.zeros((length, length), dtype=int)
+    for i in range(length):
+        adjacency[i, (i + 1) % length] = 1
+        adjacency[(i + 1) % length, i] = 1
+    return Subgraph(adjacency=adjacency)
+
+
+class TestCModelParametersBuildReliably:
+    """Reproduces ticket 003's failure mode: cycle families at C-model
+    parameters (n=1000, degrees=2*Pois(2), participation~Pois(2)) must
+    build for every cycle length by construction, not by retry luck.
+
+    Before the fix, this configuration built 0/300 times for every L
+    at these parameters (~37% of nodes over their degree budget on a
+    typical draw), because participation was sampled independently of
+    each node's degree.
+    """
+
+    @pytest.mark.parametrize("length", [3, 4, 5, 6])
+    def test_cmodel_parameters_build_reliably(self, length: int) -> None:
+        n, lam = 1000, 2.0
+        rng = np.random.default_rng(500)
+        degrees = (2 * rng.poisson(lam, n)).astype(np.int_)
+        if degrees.sum() % 2:
+            degrees[int(np.argmax(degrees))] += 1
+
+        seq = SubgraphSequence(
+            subgraph=_cycle_subgraph(length), distribution=poisson(lam)
+        )
+        config = ConfigModelConfig(
+            n=n,
+            degrees=degrees,
+            sequences=(seq,),
+            max_retries=20,  # modest — success should not depend on luck
+        )
+        graph = ConfigModelGraph.from_config(config, rng)
+        assert graph.n_nodes == n
