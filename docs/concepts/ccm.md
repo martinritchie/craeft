@@ -123,6 +123,58 @@ print(f"Degrees: {graph.degrees}")
 adj = graph.to_csr()  # scipy sparse CSR matrix
 ```
 
+## Designing matched clustering
+
+Global clustering is fully determined by a `ConfigModelConfig` *before any graph is
+generated* — the degree sequence pins the denominator (connected triples), and the
+subgraph sequences pin the numerator (expected triangles). `craeft.graphs.metrics`
+exposes this closed form via `designed_clustering` and `designed_triangles`, so a
+matched pair of configs (same degree sequence, same clustering, different higher-order
+structure) can be *designed* rather than found by trial and error.
+
+```python
+import numpy as np
+from scipy.stats import poisson
+
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
+from craeft.graphs.metrics import designed_clustering, designed_triangles
+
+rng = np.random.default_rng(0)
+degrees = np.full(500, 8, dtype=np.int_)
+
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.3))
+
+config = ConfigModelConfig(n=500, degrees=degrees, sequences=(tri_seq,))
+
+# Designed values are computed directly from the config, no generation required.
+print(f"Designed triangles:  {designed_triangles(config):.1f}")
+print(f"Designed clustering: {designed_clustering(config):.4f}")
+
+graph = ConfigModelGraph.from_config(config, rng)
+
+# The realized value is the designed value plus a by-product term (random
+# closure from stub pairing, plus subgraph overlap) — compare the two:
+print(f"Realized clustering: {graph.clustering_coefficient:.4f}")
+print(f"Graph's own designed value: {graph.designed_clustering:.4f}")
+assert graph.designed_clustering == designed_clustering(config)
+```
+
+`designed_triangles` is the more robust quantity to match across a dataset pair:
+it's an exact expectation on an integer scale, so two configs sharing the same
+`designed_triangles` value are matched on clustering without floating-point
+tolerance games. `unique_triangles(subgraph)` gives the per-instance triangle
+count a new subgraph pattern would contribute, useful when building a
+`SubgraphSequence` around a custom motif and wanting its clustering contribution
+up front.
+
+Because the realized value includes the by-product floor, a matched pair should
+compare `designed_clustering` (or `designed_triangles`) across configs — not the
+realized `clustering_coefficient` on generated graphs, which will differ by a
+small, generation-dependent amount.
+
 ## Retry behaviour
 
 The subgraph pipeline uses rejection sampling at multiple levels:
