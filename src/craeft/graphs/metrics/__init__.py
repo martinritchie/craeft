@@ -6,6 +6,11 @@ from craeft.graphs.metrics.clustering import (
     local_clustering,
     triangles_per_node,
 )
+from craeft.graphs.metrics.correlation import (
+    average_neighbour_degree,
+    clustering_by_degree,
+    degree_assortativity,
+)
 from craeft.graphs.metrics.subgraph import (
     designed_clustering,
     designed_triangles,
@@ -14,7 +19,10 @@ from craeft.graphs.metrics.subgraph import (
 )
 
 __all__ = [
+    "average_neighbour_degree",
+    "clustering_by_degree",
     "count_triangles",
+    "degree_assortativity",
     "designed_clustering",
     "designed_triangles",
     "global_clustering_coefficient",
