@@ -137,17 +137,30 @@ class SubgraphSequence:
             len(set(object.__getattribute__(self, "_cached_orbits"))) == 1,
         )
 
-    def sample(self, n: int, rng: np.random.Generator) -> NDArray[np.int_]:
+    def sample(
+        self,
+        n: int,
+        rng: np.random.Generator,
+        max_per_node: NDArray[np.int_] | None = None,
+    ) -> NDArray[np.int_]:
         """Sample a participation sequence of length n.
 
         Rejection samples until all values are non-negative and the
         total is divisible by the subgraph's node count. Values may
-        exceed n - 1 (degree budget enforcement is deferred to the
-        allocation step).
+        exceed n - 1 unless ``max_per_node`` is given.
 
         Args:
             n: Number of nodes in the network.
             rng: Random number generator.
+            max_per_node: Optional length-n array of per-node upper
+                bounds (ticket 003). Without this, participation is
+                sampled with no reference to each node's degree
+                budget, so a build's success is down to luck rather
+                than construction — see ``ConfigModelGraph.from_config``,
+                which passes a conservative degree-derived cap here.
+                When given, over-cap values are clipped (not
+                rejected) — see ``_sample_sequence`` for the bias this
+                introduces.
 
         Returns:
             Array of n non-negative counts whose sum is divisible
@@ -159,6 +172,7 @@ class SubgraphSequence:
             rng,
             divisor=self.subgraph.num_nodes,
             max_value=n,
+            max_per_node=max_per_node,
         )
 
     def _split_by_orbit(

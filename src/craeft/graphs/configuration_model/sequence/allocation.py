@@ -93,11 +93,19 @@ def allocate_subgraphs(
     # Verify every node can afford its total subgraph cost
     if np.any(total_cost > degrees):
         over = np.where(total_cost > degrees)[0]
+        # Report the worst offender by how far over budget it is, not
+        # just the first by node index — more useful for diagnosis.
+        worst = over[np.argmax(total_cost[over] - degrees[over])]
         msg = (
-            f"Degree budget exceeded for {len(over)} node(s). "
-            f"First violation at node {over[0]}: "
-            f"cost={int(total_cost[over[0]])} > "
-            f"degree={int(degrees[over[0]])}"
+            f"Degree budget exceeded for {len(over)} of {n} node(s) "
+            f"({len(over) / n:.1%}). "
+            f"Worst: node {int(worst)} needs {int(total_cost[worst])} "
+            f"but has {int(degrees[worst])}. "
+            f"Mean cost {total_cost.mean():.2f} vs mean degree "
+            f"{degrees.mean():.2f}. Participation is sampled "
+            f"independently of degree unless a per-node cap is "
+            f"supplied — reduce the participation rate or pass "
+            f"explicit sequences."
         )
         raise AllocationError(msg)
 
