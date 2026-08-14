@@ -166,6 +166,7 @@ TRIANGLE_ADJ = np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]])
 
 def _tri_seq(lam: float = 0.3) -> SubgraphSequence:
     from craeft.graphs.base import Subgraph  # noqa: PLC0415
+
     return SubgraphSequence(
         subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
         distribution=poisson(lam),
@@ -238,6 +239,7 @@ class TestConfigModelWithSubgraphs:
         not whether 3 nodes can host two distinct triangles).
         """
         from craeft.graphs.base import Subgraph  # noqa: PLC0415
+
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
             distribution=poisson(10),  # clipped down, but still >= 2
@@ -262,6 +264,7 @@ class TestConfigModelWithSubgraphs:
         `max_retries` exhaustion undebuggable.
         """
         from craeft.graphs.base import Subgraph  # noqa: PLC0415
+
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
             distribution=poisson(10),
@@ -290,6 +293,7 @@ class TestAllocationErrorDetection:
             AllocationError,
             allocate_subgraphs,
         )
+
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
             distribution=poisson(1),
@@ -311,6 +315,7 @@ class TestAllocationErrorDetection:
             AllocationError,
             allocate_subgraphs,
         )
+
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
             distribution=poisson(1),
@@ -337,6 +342,7 @@ class TestAllocationErrorDetection:
             AllocationError,
             allocate_subgraphs,
         )
+
         # Triangle is vertex-transitive: single orbit 0, sigma_0=3.
         # Total=9 -> M=3 whole instances, consistent, passes validation.
         counts = {0: np.array([3, 3, 3, 0], dtype=np.int_)}
@@ -373,9 +379,7 @@ class TestDegreePreservationVerification:
     ) -> None:
         """verify_degrees=False returns a graph without raising, even when
         the realized degrees don't match the target."""
-        monkeypatch.setattr(
-            Connector, "connect_singles", lambda self, singles: None
-        )
+        monkeypatch.setattr(Connector, "connect_singles", lambda self, singles: None)
         degrees = np.full(10, 4, dtype=np.int_)
         config = ConfigModelConfig(n=10, degrees=degrees, verify_degrees=False)
         graph = ConfigModelGraph.from_config(config, np.random.default_rng(0))
@@ -386,9 +390,7 @@ class TestDegreePreservationVerification:
     ) -> None:
         """verify_degrees defaults to True and raises DegreeMismatchError
         when the realized degrees don't match the target."""
-        monkeypatch.setattr(
-            Connector, "connect_singles", lambda self, singles: None
-        )
+        monkeypatch.setattr(Connector, "connect_singles", lambda self, singles: None)
         degrees = np.full(10, 4, dtype=np.int_)
         config = ConfigModelConfig(n=10, degrees=degrees)
         with pytest.raises(DegreeMismatchError):
@@ -398,9 +400,7 @@ class TestDegreePreservationVerification:
         self, monkeypatch: pytest.MonkeyPatch
     ) -> None:
         """Error message names the differing node count and first bad node."""
-        monkeypatch.setattr(
-            Connector, "connect_singles", lambda self, singles: None
-        )
+        monkeypatch.setattr(Connector, "connect_singles", lambda self, singles: None)
         degrees = np.full(10, 4, dtype=np.int_)
         config = ConfigModelConfig(n=10, degrees=degrees)
         with pytest.raises(DegreeMismatchError) as exc_info:
@@ -423,9 +423,7 @@ class TestDegreePreservationVerification:
             original_init(self, *args, **kwargs)
 
         monkeypatch.setattr(Connector, "__init__", counting_init)
-        monkeypatch.setattr(
-            Connector, "connect_singles", lambda self, singles: None
-        )
+        monkeypatch.setattr(Connector, "connect_singles", lambda self, singles: None)
 
         seq = SubgraphSequence(
             subgraph=Subgraph(adjacency=TRIANGLE_ADJ),

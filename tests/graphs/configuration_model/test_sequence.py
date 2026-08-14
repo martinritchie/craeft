@@ -85,9 +85,7 @@ class TestSampleSequencePerNodeCap:
         # A distribution with mean well above the caps, so clipping
         # is exercised on (almost) every node.
         caps = rng.integers(0, 5, size=n).astype(np.int_)
-        values = _sample_sequence(
-            n, poisson(6), rng, divisor=1, max_per_node=caps
-        )
+        values = _sample_sequence(n, poisson(6), rng, divisor=1, max_per_node=caps)
         assert np.all(values <= caps)
 
     @pytest.mark.parametrize("seed", range(10))
@@ -96,9 +94,7 @@ class TestSampleSequencePerNodeCap:
         rng = np.random.default_rng(seed)
         n = 200
         caps = rng.integers(1, 6, size=n).astype(np.int_)
-        values = _sample_sequence(
-            n, poisson(4), rng, divisor=3, max_per_node=caps
-        )
+        values = _sample_sequence(n, poisson(4), rng, divisor=3, max_per_node=caps)
         assert int(values.sum()) % 3 == 0
         assert np.all(values <= caps)
 
@@ -107,7 +103,5 @@ class TestSampleSequencePerNodeCap:
         rng = np.random.default_rng(1)
         n = 50
         caps = np.zeros(n, dtype=np.int_)
-        values = _sample_sequence(
-            n, poisson(3), rng, divisor=1, max_per_node=caps
-        )
+        values = _sample_sequence(n, poisson(3), rng, divisor=1, max_per_node=caps)
         assert np.all(values == 0)

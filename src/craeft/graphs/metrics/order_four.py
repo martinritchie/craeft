@@ -163,9 +163,7 @@ def order_four_ratios(adjacency: SparseMatrix) -> dict[str, float]:
     }
 
 
-def _connected_4subsets(
-    adjacency_lists: list[set[int]], n: int
-) -> set[frozenset[int]]:
+def _connected_4subsets(adjacency_lists: list[set[int]], n: int) -> set[frozenset[int]]:
     """Every connected 4-node vertex subset of the graph, each exactly once."""
     results: set[frozenset[int]] = set()
 

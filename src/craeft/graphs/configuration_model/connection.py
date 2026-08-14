@@ -65,9 +65,7 @@ class Connector:
             ConnectionError: If max_attempts exceeded.
         """
         orbit_ids = sorted(allocation.bins)
-        this_bin_keys = [
-            k for k in orbit_ids if k[0] == sequence_index
-        ]
+        this_bin_keys = [k for k in orbit_ids if k[0] == sequence_index]
 
         if not this_bin_keys:
             return  # no bins for this sequence
@@ -80,8 +78,11 @@ class Connector:
 
         # Compute number of instances from any non-empty pool
         num_instances = next(
-            (len(pool) // sequence.orbit_sizes[o]
-             for o, pool in orbit_pools.items() if pool),
+            (
+                len(pool) // sequence.orbit_sizes[o]
+                for o, pool in orbit_pools.items()
+                if pool
+            ),
             0,
         )
 
@@ -110,9 +111,7 @@ class Connector:
                     self._rng.shuffle(pool)
 
             # Copy pools so we can restore on failure
-            working_pools = {
-                o: list(pool) for o, pool in orbit_pools.items()
-            }
+            working_pools = {o: list(pool) for o, pool in orbit_pools.items()}
 
             collision = False
             # Edges proposed by earlier instances within this same
@@ -136,9 +135,7 @@ class Connector:
                 # Check for existing edges (from prior connector
                 # calls, or from earlier instances this attempt)
                 rows, cols = sequence.edges_for(group)
-                instance_edges = [
-                    (min(r, c), max(r, c)) for r, c in zip(rows, cols)
-                ]
+                instance_edges = [(min(r, c), max(r, c)) for r, c in zip(rows, cols)]
                 if any(
                     edge in self._existing or edge in proposed
                     for edge in instance_edges

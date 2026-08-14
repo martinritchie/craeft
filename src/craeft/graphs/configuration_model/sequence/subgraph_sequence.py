@@ -86,9 +86,7 @@ def _enumerate_split_points(
     o0 = orbits[0]
     max_c0 = min(s_i, R.get(o0, 0))
     for c0 in range(max_c0 + 1):
-        sub_points = _enumerate_split_points(
-            s_i - c0, R, orbits[1:]
-        )
+        sub_points = _enumerate_split_points(s_i - c0, R, orbits[1:])
         for sub in sub_points:
             points.append((c0,) + sub)
 
@@ -325,9 +323,7 @@ class SubgraphSequence:
                 s_i = int(sequence[idx])
                 if s_i == 0:
                     break
-                feasible = _enumerate_split_points(
-                    s_i, R, list(range(k))
-                )
+                feasible = _enumerate_split_points(s_i, R, list(range(k)))
                 if not feasible:
                     msg = (
                         f"Infeasible split at node {idx}: "

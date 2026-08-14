@@ -218,10 +218,7 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
                 last_exc = exc
                 continue
 
-        msg = (
-            f"Failed to generate graph after {config.max_retries} "
-            f"retries"
-        )
+        msg = f"Failed to generate graph after {config.max_retries} retries"
         raise RuntimeError(msg) from last_exc
 
     @property

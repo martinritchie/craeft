@@ -13,17 +13,13 @@ from craeft.graphs.configuration_model.sequence import (
 
 # -- Test subgraphs ----------------------------------------------------------
 
-TRIANGLE = Subgraph(
-    adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]])
-)
+TRIANGLE = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
 
 SQUARE = Subgraph(
     adjacency=np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]])
 )
 
-K4 = Subgraph(
-    adjacency=np.ones((4, 4), dtype=int) - np.eye(4, dtype=int)
-)
+K4 = Subgraph(adjacency=np.ones((4, 4), dtype=int) - np.eye(4, dtype=int))
 
 # K4 minus edge 1-3: nodes 0,2 have degree 3; nodes 1,3 have degree 2.
 DIAMOND = Subgraph(
@@ -409,9 +405,7 @@ class TestSplitDeterministic:
         parts = np.array([3, 2, 2, 1], dtype=np.int_)
         result = split_deterministic(parts, seq)
         # Should not raise.
-        SubgraphSequence(
-            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result
-        )
+        SubgraphSequence(subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result)
 
 
 class TestSplitByDegreeRank:
@@ -455,9 +449,7 @@ class TestSplitByDegreeRank:
         degrees = np.array([9, 7, 5, 3], dtype=np.int_)
         result = split_by_degree_rank(parts, degrees, seq)
         # Should not raise.
-        SubgraphSequence(
-            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result
-        )
+        SubgraphSequence(subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result)
 
 
 class TestVertexTransitiveUnaffected:

@@ -80,10 +80,7 @@ def allocate_subgraphs(
         for orbit, counts in decomp.items():
             # Verify this orbit's counts are non-negative
             if np.any(counts < 0):
-                msg = (
-                    f"Negative counts in sequence {seq_idx}, "
-                    f"orbit {orbit}"
-                )
+                msg = f"Negative counts in sequence {seq_idx}, orbit {orbit}"
                 raise AllocationError(msg)
             # Accumulate stub cost
             cost = counts * seq.orbit_degrees[orbit]

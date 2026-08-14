@@ -124,9 +124,7 @@ class TestDiamondContainsTwoTriangles:
         assert count_order_four(adj)["diamond"] == 1
 
         subgraph = Subgraph(
-            adjacency=np.array(
-                [[0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1], [1, 0, 1, 0]]
-            )
+            adjacency=np.array([[0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1], [1, 0, 1, 0]])
         )
         assert unique_triangles(subgraph) == 2
 
@@ -262,16 +260,10 @@ def _brute_force_induced_4cycles(adjacency: csr_matrix) -> int:
     n = a.shape[0]
     count = 0
     for combo in itertools.combinations(range(n), 4):
-        edges = sum(
-            1
-            for i, j in itertools.combinations(combo, 2)
-            if a[i, j]
-        )
+        edges = sum(1 for i, j in itertools.combinations(combo, 2) if a[i, j])
         if edges != 4:
             continue
-        degs = sorted(
-            sum(1 for j in combo if j != i and a[i, j]) for i in combo
-        )
+        degs = sorted(sum(1 for j in combo if j != i and a[i, j]) for i in combo)
         if degs == [2, 2, 2, 2]:
             count += 1
     return count
@@ -330,8 +322,16 @@ class TestOrderFourPerNode:
         sharing node 1 as a tip of A and a hub of B.
         """
         edges = [
-            (0, 1), (1, 2), (2, 3), (3, 0), (0, 2),  # diamond A
-            (1, 4), (4, 5), (5, 6), (6, 1), (1, 5),  # diamond B
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 0),
+            (0, 2),  # diamond A
+            (1, 4),
+            (4, 5),
+            (5, 6),
+            (6, 1),
+            (1, 5),  # diamond B
         ]
         adj = _from_edges(7, edges)
         per_node = order_four_per_node(adj)
