@@ -262,3 +262,27 @@ class TestAllocationErrorDetection:
         decomp = seq._split_by_orbit(parts, np.random.default_rng(42))
         with pytest.raises(AllocationError, match="exceeded"):
             allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(42))
+
+    def test_prescribed_split_over_budget_raises(self) -> None:
+        """A prescribed orbit split that exceeds a node's degree budget
+        must surface via AllocationError, not be silently repaired
+        (ticket 007)."""
+        from craeft.graphs.base import Subgraph  # noqa: PLC0415
+        from craeft.graphs.configuration_model.sequence import (
+            AllocationError,
+            allocate_subgraphs,
+        )
+        # Triangle is vertex-transitive: single orbit 0, sigma_0=3.
+        # Total=9 -> M=3 whole instances, consistent, passes validation.
+        counts = {0: np.array([3, 3, 3, 0], dtype=np.int_)}
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(1),
+            orbit_counts=counts,
+        )
+        # Cost per node = count * orbit_degree(2) = [6, 6, 6, 0] > degree 3.
+        degrees = np.array([3, 3, 3, 3], dtype=np.int_)
+        dummy_parts = np.array([1, 1, 1, 1], dtype=np.int_)  # ignored
+        decomp = seq._split_by_orbit(dummy_parts, np.random.default_rng(0))
+        with pytest.raises(AllocationError, match="exceeded"):
+            allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(0))

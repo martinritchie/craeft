@@ -16,6 +16,8 @@ from craeft.graphs.configuration_model.sequence.sampling import (
 )
 from craeft.graphs.configuration_model.sequence.subgraph_sequence import (
     SubgraphSequence,
+    split_by_degree_rank,
+    split_deterministic,
 )
 
 __all__ = [
@@ -24,4 +26,6 @@ __all__ = [
     "SubgraphSequence",
     "allocate_subgraphs",
     "sample_degree_sequence",
+    "split_by_degree_rank",
+    "split_deterministic",
 ]

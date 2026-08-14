@@ -110,10 +110,20 @@ class SubgraphSequence:
         subgraph: The subgraph structure to embed.
         distribution: Frozen scipy discrete distribution for
             per-node participation counts (e.g. poisson(1)).
+        orbit_counts: Prescribed per-node counts per orbit. When
+            given, overrides sampling — ``_split_by_orbit`` returns
+            it unchanged instead of drawing from the urn. Validated
+            in ``__post_init__``: keys must match the orbit labels
+            exactly, all arrays must be equal length and
+            non-negative, and each orbit's total must equal
+            ``M * orbit_sizes[o]`` for a common integer ``M`` across
+            all orbits (the invariant the urn sampler otherwise
+            enforces implicitly).
     """
 
     subgraph: Subgraph
     distribution: rv_discrete
+    orbit_counts: dict[int, NDArray[np.int_]] | None = None
 
     def __post_init__(self) -> None:
         # Eagerly compute orbits once — VF2 is expensive
@@ -136,6 +146,61 @@ class SubgraphSequence:
             "_cached_is_vertex_transitive",
             len(set(object.__getattribute__(self, "_cached_orbits"))) == 1,
         )
+        if self.orbit_counts is not None:
+            self._validate_orbit_counts()
+
+    def _validate_orbit_counts(self) -> None:
+        """Validate a prescribed per-orbit decomposition.
+
+        Raises:
+            ValueError: If keys don't match the orbit labels, arrays
+                have mismatched lengths or negative entries, or
+                per-orbit totals aren't consistent with forming a
+                common integer number of whole subgraph instances.
+        """
+        counts = self.orbit_counts
+        assert counts is not None  # guarded by caller
+        sizes = object.__getattribute__(self, "_cached_orbit_sizes")
+
+        expected_keys = set(sizes)
+        got_keys = set(counts)
+        if got_keys != expected_keys:
+            msg = (
+                f"orbit_counts keys {sorted(got_keys)} do not match "
+                f"orbit labels {sorted(expected_keys)}"
+            )
+            raise ValueError(msg)
+
+        lengths = {o: len(arr) for o, arr in counts.items()}
+        if len(set(lengths.values())) > 1:
+            msg = f"orbit_counts arrays have mismatched lengths: {lengths}"
+            raise ValueError(msg)
+
+        for o, arr in counts.items():
+            if np.any(np.asarray(arr) < 0):
+                msg = f"orbit_counts[{o}] contains negative counts"
+                raise ValueError(msg)
+
+        totals = {o: int(np.asarray(arr).sum()) for o, arr in counts.items()}
+        multiples: set[int] = set()
+        for o, total in totals.items():
+            size_o = sizes[o]
+            if total % size_o != 0:
+                msg = (
+                    f"orbit_counts[{o}] total {total} is not a multiple "
+                    f"of orbit size sigma_{o}={size_o} — cannot form "
+                    "whole subgraph instances"
+                )
+                raise ValueError(msg)
+            multiples.add(total // size_o)
+
+        if len(multiples) > 1:
+            msg = (
+                "orbit_counts totals imply inconsistent instance counts "
+                f"across orbits (no common M): totals={totals}, "
+                f"sizes={sizes}, implied M values={sorted(multiples)}"
+            )
+            raise ValueError(msg)
 
     def sample(self, n: int, rng: np.random.Generator) -> NDArray[np.int_]:
         """Sample a participation sequence of length n.
@@ -168,11 +233,13 @@ class SubgraphSequence:
     ) -> dict[int, NDArray[np.int_]]:
         """Split a participation sequence into per-orbit counts.
 
-        For vertex-transitive subgraphs (single orbit), returns the
-        sequence unchanged. For non-transitive subgraphs, uses
-        sequential conditional sampling: each node draws its orbit
-        assignments from a shared urn, ensuring global totals match
-        the subgraph's orbit proportions exactly.
+        When ``orbit_counts`` is prescribed, returns it unchanged —
+        sampling is bypassed entirely, including for vertex-transitive
+        subgraphs. Otherwise, for vertex-transitive subgraphs (single
+        orbit), returns the sequence unchanged. For non-transitive
+        subgraphs, uses sequential conditional sampling: each node
+        draws its orbit assignments from a shared urn, ensuring global
+        totals match the subgraph's orbit proportions exactly.
 
         The urn is initialised with M * σ_o balls of each orbit o,
         where M = total participations / |V(H)|. Nodes are processed
@@ -185,7 +252,9 @@ class SubgraphSequence:
 
         Args:
             sequence: A sampled participation sequence from ``sample``.
-            rng: Random number generator.
+                Ignored when ``orbit_counts`` is prescribed.
+            rng: Random number generator. Ignored when ``orbit_counts``
+                is prescribed.
 
         Returns:
             Mapping from orbit label to per-node count array.
@@ -194,6 +263,9 @@ class SubgraphSequence:
             ValueError: If the participation sequence is incompatible
                 with the subgraph's orbit proportions.
         """
+        if self.orbit_counts is not None:
+            return self.orbit_counts
+
         if self.is_vertex_transitive:
             return {0: sequence.copy()}
 
@@ -298,3 +370,145 @@ class SubgraphSequence:
         mask = self.subgraph.adjacency[rows, cols] > 0
         rows, cols = rows[mask], cols[mask]
         return (nodes[rows].tolist(), nodes[cols].tolist())
+
+
+def split_deterministic(
+    sequence: NDArray[np.int_],
+    orbits: SubgraphSequence,
+) -> dict[int, NDArray[np.int_]]:
+    """Largest-remainder split of participations across orbits.
+
+    Allocates each node's participations to orbits in fixed
+    proportion — matching the subgraph's orbit sizes — using the
+    largest-remainder (Hamilton) apportionment method. This is fully
+    deterministic (no random draws), so nodes with equal
+    participation counts receive equal orbit counts wherever
+    divisibility allows.
+
+    Orbits are processed in label order. At each step (all but the
+    last orbit), the orbit's target count is met *exactly* via
+    largest-remainder rounding of each node's remaining capacity.
+    The last orbit is never rounded — it simply absorbs whatever
+    capacity remains, which is guaranteed (by construction) to equal
+    exactly its own target. So every orbit's column sum, not just
+    the rounded ones, comes out exact — the output is always valid
+    as ``SubgraphSequence.orbit_counts``.
+
+    Args:
+        sequence: Per-node participation counts. Sum must be
+            divisible by ``orbits.subgraph.num_nodes``.
+        orbits: Subgraph sequence describing the orbit structure
+            (sizes and vertex count) to split against.
+
+    Returns:
+        Mapping from orbit label to per-node count array.
+    """
+    if orbits.is_vertex_transitive:
+        return {0: sequence.copy()}
+
+    sizes = orbits.orbit_sizes
+    n = len(sequence)
+    total_parts = int(sequence.sum())
+    num_instances = total_parts // orbits.subgraph.num_nodes
+
+    remaining_capacity = sequence.astype(np.int_).copy()
+    orbit_labels = sorted(sizes)
+    result: dict[int, NDArray[np.int_]] = {}
+
+    remaining_h = orbits.subgraph.num_nodes
+    for pos, o in enumerate(orbit_labels):
+        target = num_instances * sizes[o]
+
+        if pos == len(orbit_labels) - 1:
+            # Last orbit: whatever remains is forced, and exactly
+            # matches `target` by construction.
+            result[o] = remaining_capacity.copy()
+            continue
+
+        # Exact-integer largest remainder: numer/remaining_h is the
+        # ideal (real-valued) share, computed without floats to avoid
+        # precision artefacts.
+        numer = remaining_capacity.astype(np.int64) * sizes[o]
+        floor_counts = (numer // remaining_h).astype(np.int_)
+        remainder = (numer % remaining_h).astype(np.int_)
+        deficit = target - int(floor_counts.sum())
+
+        counts = floor_counts.copy()
+        if deficit > 0:
+            # Largest remainder first; ties broken by node index for
+            # determinism.
+            order = np.lexsort((np.arange(n), -remainder))
+            for idx in order[:deficit]:
+                counts[idx] += 1
+
+        result[o] = counts
+        remaining_capacity = remaining_capacity - counts
+        remaining_h -= sizes[o]
+
+    return result
+
+
+def split_by_degree_rank(
+    sequence: NDArray[np.int_],
+    degrees: NDArray[np.int_],
+    orbits: SubgraphSequence,
+) -> dict[int, NDArray[np.int_]]:
+    """Assign high-cardinality orbits to high-degree nodes.
+
+    The "push clustered subgraphs onto hubs" construction (2017
+    paper, §3.3): ranks orbits by their within-subgraph degree
+    (descending — the hub role first) and nodes by their network
+    degree (descending), then greedily fills each orbit's target
+    count from the highest-remaining-degree nodes with participation
+    capacity left. Network hubs preferentially fill hub-like orbit
+    roles, concentrating designed clustering on high-degree nodes.
+
+    Deterministic given ``degrees`` — no random draws. Ties in
+    ``degrees`` are broken by node index (stable sort) and ties in
+    orbit degree are broken by orbit label.
+
+    Args:
+        sequence: Per-node participation counts. Sum must be
+            divisible by ``orbits.subgraph.num_nodes``.
+        degrees: Per-node network degree, same length as
+            ``sequence``. Used only to rank priority — this does
+            *not* check the degree budget; that is
+            ``allocate_subgraphs``'s job.
+        orbits: Subgraph sequence describing the orbit structure.
+
+    Returns:
+        Mapping from orbit label to per-node count array.
+    """
+    if orbits.is_vertex_transitive:
+        return {0: sequence.copy()}
+
+    sizes = orbits.orbit_sizes
+    orbit_degrees = orbits.orbit_degrees
+    n = len(sequence)
+    total_parts = int(sequence.sum())
+    num_instances = total_parts // orbits.subgraph.num_nodes
+
+    remaining_capacity = sequence.astype(np.int_).copy()
+    result = {o: np.zeros(n, dtype=np.int_) for o in sizes}
+
+    # Highest within-subgraph degree (hub-like orbits) first.
+    orbit_order = sorted(sizes, key=lambda o: (-orbit_degrees[o], o))
+    # Highest network degree first; stable so equal-degree nodes
+    # keep their original relative order.
+    node_order = np.argsort(-degrees, kind="stable")
+
+    for o in orbit_order:
+        need = num_instances * sizes[o]
+        if need == 0:
+            continue
+        for idx in node_order:
+            if need <= 0:
+                break
+            take = min(int(remaining_capacity[idx]), need)
+            if take <= 0:
+                continue
+            result[o][idx] += take
+            remaining_capacity[idx] -= take
+            need -= take
+
+    return result
