@@ -5,7 +5,11 @@ import pytest
 from scipy.stats import poisson
 
 from craeft.graphs.base import Subgraph
-from craeft.graphs.configuration_model.sequence import SubgraphSequence
+from craeft.graphs.configuration_model.sequence import (
+    SubgraphSequence,
+    split_by_degree_rank,
+    split_deterministic,
+)
 
 # -- Test subgraphs ----------------------------------------------------------
 
@@ -266,3 +270,240 @@ class TestSplitByOrbitDiamond:
         parts = np.array([1, 1, 1, 0], dtype=np.int_)  # sum=3, not div by 4
         with pytest.raises(ValueError):
             seq._split_by_orbit(parts, rng)
+
+
+# -- Prescribed orbit_counts (ticket 007) -------------------------------------
+
+
+class TestPrescribedOrbitCountsVerbatim:
+    """A prescribed decomposition bypasses sampling entirely."""
+
+    def test_prescribed_orbit_counts_used_verbatim(self) -> None:
+        counts = {
+            0: np.array([2, 1, 1, 0], dtype=np.int_),
+            1: np.array([1, 1, 1, 1], dtype=np.int_),
+        }
+        seq = SubgraphSequence(
+            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+        )
+        rng = np.random.default_rng(0)
+        # Deliberately inconsistent with `counts` — proves it's ignored.
+        dummy_parts = np.array([9, 9, 9, 9], dtype=np.int_)
+
+        result = seq._split_by_orbit(dummy_parts, rng)
+
+        np.testing.assert_array_equal(result[0], counts[0])
+        np.testing.assert_array_equal(result[1], counts[1])
+
+
+class TestPrescribedOrbitCountsValidation:
+    """__post_init__ validates orbit_counts eagerly."""
+
+    def test_prescribed_counts_reject_inconsistent_totals(self) -> None:
+        # sigma_0 = sigma_1 = 2 for the diamond. total_0=4 -> M=2,
+        # total_1=2 -> M=1: no common M.
+        counts = {
+            0: np.array([2, 2, 0, 0], dtype=np.int_),
+            1: np.array([1, 1, 0, 0], dtype=np.int_),
+        }
+        with pytest.raises(ValueError, match="inconsistent"):
+            SubgraphSequence(
+                subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+            )
+
+    def test_prescribed_counts_reject_wrong_keys(self) -> None:
+        counts = {
+            0: np.array([1, 1, 1, 1], dtype=np.int_),
+            2: np.array([1, 1, 1, 1], dtype=np.int_),  # diamond has {0, 1}
+        }
+        with pytest.raises(ValueError, match="keys"):
+            SubgraphSequence(
+                subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+            )
+
+    def test_prescribed_counts_reject_negative(self) -> None:
+        counts = {
+            0: np.array([-1, 3, 0, 0], dtype=np.int_),
+            1: np.array([1, 1, 0, 0], dtype=np.int_),
+        }
+        with pytest.raises(ValueError, match="negative"):
+            SubgraphSequence(
+                subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+            )
+
+    def test_prescribed_counts_reject_length_mismatch(self) -> None:
+        counts = {
+            0: np.array([1, 1, 1], dtype=np.int_),
+            1: np.array([1, 1], dtype=np.int_),
+        }
+        with pytest.raises(ValueError, match="length"):
+            SubgraphSequence(
+                subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+            )
+
+
+class TestPrescribedSplitDeterminism:
+    """The point of the ticket: identical prescription -> identical
+    per-node designed triangle counts, regardless of seed."""
+
+    def test_prescribed_split_gives_deterministic_local_clustering(self) -> None:
+        # Diamond: each hub (orbit 0) participation sits in 2 triangles
+        # per instance; each leaf (orbit 1) participation sits in 1.
+        counts = {
+            0: np.array([2, 1, 1, 0], dtype=np.int_),
+            1: np.array([1, 1, 1, 1], dtype=np.int_),
+        }
+        seq = SubgraphSequence(
+            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=counts
+        )
+        dummy_parts = np.array([3, 2, 2, 1], dtype=np.int_)
+
+        def designed_triangles(decomp: dict[int, np.ndarray]) -> np.ndarray:
+            return 2 * decomp[0] + 1 * decomp[1]
+
+        results = [
+            designed_triangles(
+                seq._split_by_orbit(dummy_parts, np.random.default_rng(seed))
+            )
+            for seed in range(8)
+        ]
+        for r in results[1:]:
+            np.testing.assert_array_equal(r, results[0])
+
+
+class TestSplitDeterministic:
+    """Largest-remainder split: equal participation -> equal orbit counts."""
+
+    def test_deterministic_split_equal_participation_equal_orbits(self) -> None:
+        seq = _seq(DIAMOND)
+        parts = np.array([2, 2, 2, 2], dtype=np.int_)  # all nodes equal
+        result = split_deterministic(parts, seq)
+
+        assert len(set(result[0].tolist())) == 1
+        assert len(set(result[1].tolist())) == 1
+
+        # Row sums preserved.
+        np.testing.assert_array_equal(result[0] + result[1], parts)
+
+        # Column sums exactly M * sigma_o.
+        total = int(parts.sum())
+        m = total // DIAMOND.num_nodes
+        assert result[0].sum() == m * seq.orbit_sizes[0]
+        assert result[1].sum() == m * seq.orbit_sizes[1]
+
+    def test_row_and_column_sums_exact_for_unequal_participation(self) -> None:
+        seq = _seq(DIAMOND)
+        parts = np.array([3, 2, 2, 1], dtype=np.int_)
+        result = split_deterministic(parts, seq)
+
+        np.testing.assert_array_equal(result[0] + result[1], parts)
+        total = int(parts.sum())
+        m = total // DIAMOND.num_nodes
+        assert result[0].sum() == m * seq.orbit_sizes[0]
+        assert result[1].sum() == m * seq.orbit_sizes[1]
+
+    def test_output_is_valid_prescribed_orbit_counts(self) -> None:
+        """split_deterministic's output must pass SubgraphSequence's
+        own orbit_counts validation — round-trip sanity check."""
+        seq = _seq(DIAMOND)
+        parts = np.array([3, 2, 2, 1], dtype=np.int_)
+        result = split_deterministic(parts, seq)
+        # Should not raise.
+        SubgraphSequence(
+            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result
+        )
+
+
+class TestSplitByDegreeRank:
+    """Assigns high-cardinality (hub) orbits to high-degree nodes."""
+
+    def test_degree_rank_split_raises_assortativity(self) -> None:
+        """Pairs with ticket 005 (assortativity metric, not yet built):
+        pushing the higher-degree orbit role onto high-degree nodes is
+        exactly the construction that raises degree assortativity in
+        the 2017 paper. This checks the underlying signature directly —
+        a strong positive correlation between node degree and the
+        stub-cost contributed by the (higher-cardinality) hub orbit —
+        without depending on ticket 005's not-yet-implemented metric.
+        """
+        seq = _seq(DIAMOND)
+        n = 8
+        parts = np.full(n, 2, dtype=np.int_)
+        degrees = np.array([10, 9, 8, 7, 6, 5, 4, 3], dtype=np.int_)
+
+        result = split_by_degree_rank(parts, degrees, seq)
+        hub_cost = result[0] * seq.orbit_degrees[0]
+
+        corr = np.corrcoef(degrees, hub_cost)[0, 1]
+        assert corr > 0.8
+
+    def test_row_and_column_sums_exact(self) -> None:
+        seq = _seq(DIAMOND)
+        parts = np.array([3, 2, 2, 1], dtype=np.int_)
+        degrees = np.array([9, 7, 5, 3], dtype=np.int_)
+        result = split_by_degree_rank(parts, degrees, seq)
+
+        np.testing.assert_array_equal(result[0] + result[1], parts)
+        total = int(parts.sum())
+        m = total // DIAMOND.num_nodes
+        assert result[0].sum() == m * seq.orbit_sizes[0]
+        assert result[1].sum() == m * seq.orbit_sizes[1]
+
+    def test_output_is_valid_prescribed_orbit_counts(self) -> None:
+        seq = _seq(DIAMOND)
+        parts = np.array([3, 2, 2, 1], dtype=np.int_)
+        degrees = np.array([9, 7, 5, 3], dtype=np.int_)
+        result = split_by_degree_rank(parts, degrees, seq)
+        # Should not raise.
+        SubgraphSequence(
+            subgraph=DIAMOND, distribution=poisson(1), orbit_counts=result
+        )
+
+
+class TestVertexTransitiveUnaffected:
+    """Regression: vertex-transitive subgraphs unaffected by orbit_counts."""
+
+    @pytest.mark.parametrize("subgraph", [TRIANGLE, SQUARE, K4])
+    def test_no_orbit_counts_still_returns_sequence_verbatim(
+        self, subgraph: Subgraph
+    ) -> None:
+        seq = _seq(subgraph)
+        rng = np.random.default_rng(1)
+        parts = np.array([2, 1, 0, 3][: subgraph.num_nodes], dtype=np.int_)
+        result = seq._split_by_orbit(parts, rng)
+        assert set(result.keys()) == {0}
+        np.testing.assert_array_equal(result[0], parts)
+
+    def test_prescribed_counts_bypass_even_when_vertex_transitive(self) -> None:
+        counts = {0: np.array([2, 1, 0], dtype=np.int_)}  # sum=3, sigma_0=3
+        seq = SubgraphSequence(
+            subgraph=TRIANGLE, distribution=poisson(1), orbit_counts=counts
+        )
+        assert seq.is_vertex_transitive
+        rng = np.random.default_rng(5)
+        dummy_parts = np.array([9, 9, 9], dtype=np.int_)
+
+        result = seq._split_by_orbit(dummy_parts, rng)
+
+        np.testing.assert_array_equal(result[0], counts[0])
+
+    @pytest.mark.parametrize("subgraph", [TRIANGLE, SQUARE, K4])
+    def test_split_deterministic_returns_sequence_verbatim(
+        self, subgraph: Subgraph
+    ) -> None:
+        seq = _seq(subgraph)
+        parts = np.array([2, 1, 0, 3][: subgraph.num_nodes], dtype=np.int_)
+        result = split_deterministic(parts, seq)
+        assert set(result.keys()) == {0}
+        np.testing.assert_array_equal(result[0], parts)
+
+    @pytest.mark.parametrize("subgraph", [TRIANGLE, SQUARE, K4])
+    def test_split_by_degree_rank_returns_sequence_verbatim(
+        self, subgraph: Subgraph
+    ) -> None:
+        seq = _seq(subgraph)
+        parts = np.array([2, 1, 0, 3][: subgraph.num_nodes], dtype=np.int_)
+        degrees = np.array([9, 7, 5, 3][: subgraph.num_nodes], dtype=np.int_)
+        result = split_by_degree_rank(parts, degrees, seq)
+        assert set(result.keys()) == {0}
+        np.testing.assert_array_equal(result[0], parts)

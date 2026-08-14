@@ -384,6 +384,89 @@ practice this is not needed for CMA.
 
 ---
 
+## Prescribing the Split Directly
+
+Sampling gets the *global* orbit totals exactly right ($M\sigma_o$ on the
+nose) but *which* node lands in which orbit is a random draw. For an
+asymmetric subgraph like the diamond, orbits carry different triangle
+counts (hubs sit in more triangles than leaves), so a node's designed
+local clustering is only correct **in expectation** — two nodes with
+identical participation $s_i$ can walk away with different orbit splits,
+and therefore different per-node designed triangle counts, purely because
+of draw order and the luck of the urn. Global $C$ is invariant across
+re-splits; the per-node $c_i$ profile is not.
+
+That's fine when only the aggregate matters. It's a problem when the
+*placement* of structure is itself the thing under study (e.g. a
+benchmark that varies where clustering sits, or holds the $c(k)$ profile
+fixed while changing something else). For that, `SubgraphSequence`
+accepts a prescribed decomposition:
+
+```python
+SubgraphSequence(
+    subgraph=diamond,
+    distribution=poisson(1),
+    orbit_counts={0: hub_counts, 1: leaf_counts},
+)
+```
+
+When `orbit_counts` is set, `_split_by_orbit` returns it unchanged —
+sampling is bypassed entirely, including the vertex-transitive
+early-return (a single-orbit subgraph can still be prescribed; it just
+has one key). The participation sequence and RNG passed to
+`_split_by_orbit` are ignored in this case.
+
+### Validation
+
+`orbit_counts` is checked eagerly in `__post_init__`, so a malformed
+prescription fails at construction, not partway through generation:
+
+1. **Keys** must equal the orbit labels exactly.
+2. **Arrays** must all be the same length and non-negative.
+3. **Totals** must satisfy $\sum_i C_{io} = M \cdot \sigma_o$ for a
+   *common* integer $M$ across every orbit — the same column-sum
+   invariant the urn sampler enforces implicitly through depletion,
+   made explicit and checked up front. A prescription that would form,
+   say, 2 hub-instances but only 1 leaf-instance is rejected.
+
+Row sums (does $\sum_o C_{io}$ match a real participation count for node
+$i$?) are *not* checked here — `orbit_counts` fully replaces the
+participation sequence, so there's nothing to compare against at this
+stage. What *is* still enforced downstream is the degree budget: a
+prescribed split can demand more stubs than a node's degree allows,
+exactly as a sampled one can. `allocate_subgraphs` runs unconditionally
+in the pipeline and raises `AllocationError` if so — a bad prescription
+is surfaced, never silently repaired.
+
+### Building a prescription: two helpers
+
+Hand-building `orbit_counts` is impractical for anything beyond a toy
+example, so two constructors cover the common cases. Both take a
+participation sequence and return a dictionary in the same shape
+`orbit_counts` expects — feed the output straight back in.
+
+**`split_deterministic(sequence, orbits)`** — the "fair" split. Uses
+largest-remainder (Hamilton) apportionment to give each node its
+proportional share of each orbit, so nodes with equal participation
+get equal orbit counts wherever divisibility allows. Unlike the urn
+sampler, this has no processing-order dependence: the split for node
+$i$ depends only on $s_i$, not on what earlier nodes happened to draw.
+
+**`split_by_degree_rank(sequence, degrees, orbits)`** — the "push
+clustered subgraphs onto hubs" construction. Ranks orbits by
+within-subgraph degree $\delta_o$ (hub roles first) and nodes by
+network degree (highest first), then greedily fills each orbit's
+target from the highest-remaining-degree nodes with capacity left. This
+is the placement the 2017 paper used to reach $C = 0.67$ (§3.3) — doing
+it deliberately, rather than as a side effect of greedy allocation
+order, makes the resulting assortativity shift (ticket 005) a
+controlled variable instead of an incidental one.
+
+Both helpers keep the vertex-transitive early return: a single-orbit
+subgraph is passed through unchanged, since there's nothing to split.
+
+---
+
 ## Feasibility Guarantee
 
 Before running the full loop, you can cheaply check whether a valid assignment
