@@ -14,11 +14,18 @@ Uses the config → graph pipeline: `ConfigModelConfig` produces
 
 ## Graph model
 
+`ConfigModelGraph.from_config` guarantees the realized degree sequence matches
+`config.degrees` exactly: it verifies this before returning and raises
+`DegreeMismatchError` on any mismatch, unless `config.verify_degrees` is set
+to `False`. See [Degree preservation guarantee](../concepts/ccm.md#degree-preservation-guarantee)
+for details.
+
 ::: craeft.graphs.configuration_model.models
     options:
       members:
         - ConfigModelConfig
         - ConfigModelGraph
+        - DegreeMismatchError
 
 ## Sequence sampling
 

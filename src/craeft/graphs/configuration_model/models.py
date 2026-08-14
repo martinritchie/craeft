@@ -33,11 +33,17 @@ class ConfigModelConfig(GraphConfig):
             a standard configuration model graph (edge-only).
         max_retries: Maximum reset-and-retry attempts when subgraph
             allocation or connection fails.
+        verify_degrees: Raise if the realized degree sequence differs
+            from ``degrees``.
+
+            Set False only for exploratory work where approximate
+            degrees are acceptable.
     """
 
     degrees: NDArray[np.int_]
     sequences: tuple[SubgraphSequence, ...] = ()
     max_retries: int = 100
+    verify_degrees: bool = True
 
     def __post_init__(self) -> None:
         if len(self.degrees) != self.n:
@@ -49,6 +55,31 @@ class ConfigModelConfig(GraphConfig):
         if int(self.degrees.sum()) % 2 != 0:
             msg = f"Degree sum must be even, got {int(self.degrees.sum())}"
             raise ValueError(msg)
+
+
+class DegreeMismatchError(Exception):
+    """Raised when the realized degree sequence differs from the prescribed one."""
+
+
+def _verify_degrees(graph: ConfigModelGraph, config: ConfigModelConfig) -> None:
+    """Raise DegreeMismatchError if realized degrees differ from config.degrees.
+
+    No-op when config.verify_degrees is False.
+    """
+    if not config.verify_degrees:
+        return
+    realized = graph.degrees
+    if np.array_equal(realized, config.degrees):
+        return
+    diff = realized - config.degrees
+    bad = int(np.count_nonzero(diff))
+    msg = (
+        f"Degree sequence not preserved: {bad} node(s) differ "
+        f"(total |deficit| {int(np.abs(diff).sum())}, "
+        f"max {int(np.abs(diff).max())}). "
+        f"First at node {int(np.flatnonzero(diff)[0])}."
+    )
+    raise DegreeMismatchError(msg)
 
 
 class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
@@ -96,11 +127,17 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
 
         Raises:
             RuntimeError: If all retries exhausted.
+            DegreeMismatchError: If config.verify_degrees is True and the
+                realized degree sequence differs from config.degrees. Not
+                caught by the retry loop above: a mismatch is a correctness
+                bug, not a dead-end configuration worth retrying.
         """
         if not config.sequences:
             connector = Connector(config.n, rng)
             connector.connect_singles(config.degrees)
-            return cls(connector.to_csr())
+            graph = cls(connector.to_csr())
+            _verify_degrees(graph, config)
+            return graph
 
         # Subgraph sequence pipeline
         for _ in range(config.max_retries):
@@ -134,7 +171,9 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
                 connector.connect_singles(allocation.singles)
 
                 # 5. Assemble into adjacency matrix
-                return cls(connector.to_csr())
+                graph = cls(connector.to_csr())
+                _verify_degrees(graph, config)
+                return graph
 
             except (AllocationError, ConnectionError, ValueError, RuntimeError):
                 # Retry with a fresh random state on any failure

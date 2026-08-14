@@ -9,6 +9,8 @@ from craeft.graphs.configuration_model import (
     ConfigModelConfig,
     ConfigModelGraph,
 )
+from craeft.graphs.configuration_model.connection import Connector
+from craeft.graphs.configuration_model.models import DegreeMismatchError
 from craeft.graphs.configuration_model.sequence import (
     SubgraphSequence,
     sample_degree_sequence,
@@ -262,3 +264,90 @@ class TestAllocationErrorDetection:
         decomp = seq._split_by_orbit(parts, np.random.default_rng(42))
         with pytest.raises(AllocationError, match="exceeded"):
             allocate_subgraphs(degrees, [seq], [decomp], np.random.default_rng(42))
+
+
+# ---------------------------------------------------------------------------
+# Degree preservation verification (ticket 002)
+# ---------------------------------------------------------------------------
+
+
+class TestDegreePreservationVerification:
+    def test_degrees_verified_by_default(self) -> None:
+        """With the matching algorithm fixed (001), generation succeeds and
+        the realized degree sequence matches the target exactly."""
+        rng = np.random.default_rng(7)
+        degrees = np.full(200, 6, dtype=np.int_)
+        config = ConfigModelConfig(n=200, degrees=degrees)
+        graph = ConfigModelGraph.from_config(config, rng)
+        assert np.array_equal(graph.degrees, degrees)
+
+    def test_verify_degrees_false_allows_mismatch(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """verify_degrees=False returns a graph without raising, even when
+        the realized degrees don't match the target."""
+        monkeypatch.setattr(
+            Connector, "connect_singles", lambda self, singles: None
+        )
+        degrees = np.full(10, 4, dtype=np.int_)
+        config = ConfigModelConfig(n=10, degrees=degrees, verify_degrees=False)
+        graph = ConfigModelGraph.from_config(config, np.random.default_rng(0))
+        assert not np.array_equal(graph.degrees, degrees)
+
+    def test_verify_degrees_true_raises_on_mismatch(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """verify_degrees defaults to True and raises DegreeMismatchError
+        when the realized degrees don't match the target."""
+        monkeypatch.setattr(
+            Connector, "connect_singles", lambda self, singles: None
+        )
+        degrees = np.full(10, 4, dtype=np.int_)
+        config = ConfigModelConfig(n=10, degrees=degrees)
+        with pytest.raises(DegreeMismatchError):
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+    def test_error_message_reports_node_count(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Error message names the differing node count and first bad node."""
+        monkeypatch.setattr(
+            Connector, "connect_singles", lambda self, singles: None
+        )
+        degrees = np.full(10, 4, dtype=np.int_)
+        config = ConfigModelConfig(n=10, degrees=degrees)
+        with pytest.raises(DegreeMismatchError) as exc_info:
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+        msg = str(exc_info.value)
+        assert "10 node(s)" in msg
+        assert "node 0" in msg
+
+    def test_verification_does_not_trigger_retries(
+        self, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """A degree mismatch surfaces on the first attempt; it is not caught
+        by the retry loop and does not burn through max_retries."""
+        original_init = Connector.__init__
+        call_count = 0
+
+        def counting_init(self: Connector, *args: object, **kwargs: object) -> None:
+            nonlocal call_count
+            call_count += 1
+            original_init(self, *args, **kwargs)
+
+        monkeypatch.setattr(Connector, "__init__", counting_init)
+        monkeypatch.setattr(
+            Connector, "connect_singles", lambda self, singles: None
+        )
+
+        seq = SubgraphSequence(
+            subgraph=Subgraph(adjacency=TRIANGLE_ADJ),
+            distribution=poisson(0),  # degenerate: always samples 0
+        )
+        degrees = np.full(10, 4, dtype=np.int_)
+        config = ConfigModelConfig(
+            n=10, degrees=degrees, sequences=(seq,), max_retries=50
+        )
+        with pytest.raises(DegreeMismatchError):
+            ConfigModelGraph.from_config(config, np.random.default_rng(42))
+        assert call_count == 1
