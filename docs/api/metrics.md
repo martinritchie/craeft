@@ -35,6 +35,20 @@ graph is generated. See `docs/concepts/ccm.md` for a worked example.
         - average_neighbour_degree
         - clustering_by_degree
 
+## Order-four structure
+
+Ratios and per-node counts of connected 4-node induced subgraphs (2014
+Section 2.2, item 4). Clustering is the *matched* quantity in a dataset
+pair; order-four composition is what actually distinguishes networks with
+identical degree distribution and identical clustering.
+
+::: craeft.graphs.metrics.order_four
+    options:
+      members:
+        - count_order_four
+        - order_four_ratios
+        - order_four_per_node
+
 ## Clustering (legacy)
 
 ::: craeft.networks.metrics.clustering
