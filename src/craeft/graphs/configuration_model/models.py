@@ -7,6 +7,7 @@ from typing import Self
 
 import numpy as np
 from numpy.typing import NDArray
+from scipy.sparse import csr_matrix
 
 from craeft.graphs.base import GraphConfig, UndirectedGraph
 from craeft.graphs.configuration_model.connection import (
@@ -19,6 +20,7 @@ from craeft.graphs.configuration_model.sequence import (
     allocate_subgraphs,
 )
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
+from craeft.graphs.metrics.subgraph import designed_clustering as _designed_clustering
 
 
 @dataclass(frozen=True)
@@ -95,6 +97,14 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
     Retries from scratch on failure (dead-end configurations).
     """
 
+    def __init__(
+        self,
+        adjacency: csr_matrix,
+        config: ConfigModelConfig | None = None,
+    ) -> None:
+        super().__init__(adjacency)
+        self._config = config
+
     @classmethod
     def from_config(
         cls,
@@ -135,7 +145,7 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
         if not config.sequences:
             connector = Connector(config.n, rng)
             connector.connect_singles(config.degrees)
-            graph = cls(connector.to_csr())
+            graph = cls(connector.to_csr(), config=config)
             _verify_degrees(graph, config)
             return graph
 
@@ -199,7 +209,7 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
                 connector.connect_singles(allocation.singles)
 
                 # 5. Assemble into adjacency matrix
-                graph = cls(connector.to_csr())
+                graph = cls(connector.to_csr(), config=config)
                 _verify_degrees(graph, config)
                 return graph
 
@@ -217,3 +227,22 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
     @property
     def clustering_coefficient(self) -> float:
         return global_clustering_coefficient(self._adjacency)
+
+    @property
+    def designed_clustering(self) -> float:
+        """Designed clustering coefficient implied by the originating config.
+
+        The closed-form value computed from the config before generation
+        (see `craeft.graphs.metrics.designed_clustering`), for comparison
+        against the realized `clustering_coefficient`. The realized value
+        will typically exceed this by a small by-product term (random
+        closure from stub pairing plus subgraph overlap).
+
+        Raises:
+            ValueError: If the graph was not built via `from_config` (so
+                has no attached config to compute the designed value from).
+        """
+        if self._config is None:
+            msg = "designed_clustering requires a graph built via from_config"
+            raise ValueError(msg)
+        return _designed_clustering(self._config)
