@@ -1,4 +1,4 @@
-.PHONY: lint format check typecheck test coverage all clean lint-path format-path install reinstall docs docs-serve hooks
+.PHONY: lint format check typecheck test all clean lint-path format-path install reinstall docs docs-serve hooks
 
 # Run all checks (lint + typecheck)
 all: lint typecheck
@@ -23,14 +23,10 @@ format-path:
 	uv run ruff format $(PATH)
 	uv run ruff check --fix $(PATH)
 
-# Run tests
-test:
-	uv run pytest tests/
-
 # Run tests with coverage report
-coverage:
-	uv run pytest tests/ --cov=src/ 
-	rm .coverage
+test:
+	uv run pytest tests/ --cov=src/ --cov-report=term-missing
+	rm -f .coverage
 
 # Install git hooks
 hooks:

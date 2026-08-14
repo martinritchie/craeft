@@ -11,10 +11,12 @@ The simplest model — each edge exists independently with probability $p$.
 
 ```python
 import numpy as np
-from craeft import random_graph
+from craeft.graphs.erdos_renyi import ErdosRenyiGraph, ErdosRenyiConfig
 
 rng = np.random.default_rng(42)
-adjacency = random_graph(n=1000, p=0.01, rng=rng)
+config = ErdosRenyiConfig(n=1000, p=0.01)
+graph = ErdosRenyiGraph.from_config(config, rng)
+adjacency = graph.to_csr()
 ```
 
 ### Configuration model (unclustered)
@@ -22,30 +24,55 @@ adjacency = random_graph(n=1000, p=0.01, rng=rng)
 Prescribe an exact degree sequence. The result has near-zero clustering.
 
 ```python
-from craeft import configuration_model
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
 
 degrees = np.full(1000, 5)  # all nodes degree 5
-adjacency = configuration_model(degrees, rng=rng)
+config = ConfigModelConfig(n=1000, degrees=degrees)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Clustering: {graph.clustering_coefficient:.4f}")
 ```
 
 ### Clustered configuration model
 
-Add clustering by setting `phi > 0`. The CCM allocates a fraction of each
-node's stubs to motif participation (triangles, K4 cliques) before pairing
-the remainder via the standard configuration model.
+Embed subgraph structures to produce non-zero clustering. Each
+`SubgraphSequence` pairs a subgraph with a discrete distribution
+controlling how many times each node participates in that subgraph.
 
 ```python
-adjacency = configuration_model(degrees, phi=0.2, rng=rng)
+from scipy.stats import poisson
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
+
+# Define subgraph structures
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+diamond = Subgraph(adjacency=np.array([
+    [0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1], [1, 0, 1, 0]
+]))
+
+# Pair with participation distributions
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.2))
+dia_seq = SubgraphSequence(subgraph=diamond, distribution=poisson(0.1))
+
+config = ConfigModelConfig(
+    n=1000,
+    degrees=degrees,
+    sequences=(tri_seq, dia_seq),
+    max_retries=100,
+)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Clustering: {graph.clustering_coefficient:.4f}")
 ```
 
-### Using generator objects
+The pipeline automatically handles orbit decomposition for non-vertex-transitive
+subgraphs (like the diamond, which has hub and leaf orbits).
+
+### Using generator objects (legacy API)
 
 For experiments that generate many networks with the same parameters,
-use the generator dataclasses. These are frozen, picklable, and compose
-cleanly with the `Experiment` orchestrator.
+the legacy `networks/` API provides frozen dataclass generators:
 
 ```python
-from craeft import (
+from craeft.networks.generation.generator import (
     PoissonNetworkGenerator,
     BigVRewiringGenerator,
     MotifDecompositionGenerator,
@@ -58,28 +85,21 @@ gen = PoissonNetworkGenerator(n=1000, mean_degree=5, max_degree=20, phi=0.2)
 base = PoissonNetworkGenerator(n=1000, mean_degree=5, max_degree=20)
 gen = BigVRewiringGenerator(base=base, target_clustering=0.2)
 
-# Motif decomposition (start from cliques, tear down to target)
-gen = MotifDecompositionGenerator(
-    num_nodes=1000, clique_size=6, target_clustering=0.2,
-)
-
 adjacency = gen.generate(rng)
 ```
 
 ## Measuring network structure
 
 ```python
-from craeft import global_clustering_coefficient, is_connected
-from craeft.networks.metrics import (
-    count_triangles,
-    local_clustering,
-    triangles_per_node,
-)
+from craeft.graphs.metrics.clustering import global_clustering_coefficient
 
-print(f"Connected: {is_connected(adjacency)}")
-print(f"Triangles: {count_triangles(adjacency)}")
-print(f"Global clustering: {global_clustering_coefficient(adjacency):.4f}")
+print(f"Connected: {graph.is_connected}")
+print(f"Clustering: {graph.clustering_coefficient:.4f}")
+print(f"Degrees: {graph.degrees}")
 ```
+
+The graph objects expose properties directly. For raw adjacency matrices,
+use the standalone metrics functions.
 
 ## Running SIR epidemics
 
@@ -93,7 +113,9 @@ from craeft.point_processes.epidemics import SIRConfig, SIRProcessFactory
 
 sir = SIRConfig(tau=1.0, gamma=1.0, initial_infected=5)
 convergence = ConvergenceConfig(t_end=15.0)
-factory = SIRProcessFactory(config=sir, adjacency=adjacency, convergence_config=convergence)
+factory = SIRProcessFactory(
+    config=sir, adjacency=adjacency, convergence_config=convergence
+)
 
 trajectory, final_size, accepted = run_once(factory, t_end=15.0, rng=rng)
 print(f"Final size: {final_size}")
@@ -119,7 +141,7 @@ result = simulator.run(adjacency, rng)
 
 print(f"Converged: {result.convergence.converged}")
 print(f"Realisations: {result.convergence.n_realizations}")
-print(f"Mean final size: {result.scalar_output_mean:.1f} ± {result.scalar_output_std:.1f}")
+print(f"Mean final size: {result.scalar_output_mean:.1f}")
 ```
 
 ## Running full experiments
@@ -128,11 +150,14 @@ The `Experiment` class composes a generator and simulator, running
 multiple network realisations with optional parallelism.
 
 ```python
-from craeft import Experiment, PoissonNetworkGenerator
+from craeft import Experiment
+from craeft.networks.generation.generator import PoissonNetworkGenerator
 from craeft.point_processes.epidemics import SIRSimulator, SIRConfig
 from craeft.point_processes import ConvergenceConfig
 
-generator = PoissonNetworkGenerator(n=500, mean_degree=5, max_degree=20, phi=0.2)
+generator = PoissonNetworkGenerator(
+    n=500, mean_degree=5, max_degree=20, phi=0.2
+)
 simulator = SIRSimulator(
     config=SIRConfig(tau=1.0, gamma=1.0, initial_infected=5),
     convergence=ConvergenceConfig(t_end=15.0, max_realizations=200),

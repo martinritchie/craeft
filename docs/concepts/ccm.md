@@ -1,102 +1,231 @@
 # Clustered Configuration Model
 
-The Clustered Configuration Model (CCM) extends the standard configuration
-model to generate networks with both a prescribed degree sequence *and* a
-target clustering coefficient $\phi$.
+The Clustered Configuration Model (CCM) generates networks with both a
+prescribed degree sequence *and* a target clustering coefficient $\phi$. It
+does this by embedding subgraph instances (motifs) into the network, then
+pairing remaining single stubs via the standard configuration model.
 
 !!! note "Reference"
-    The CCM algorithm is described in: Ritchie, M., Berthouze, L., & Kiss,
+    The core algorithm is described in: Ritchie, M., Berthouze, L., & Kiss,
     I. Z. (2014). Higher-order structure and epidemic dynamics in clustered
     networks. *Journal of Mathematical Biology*, 72(3), 483–511.
 
-## The problem
+    The orbital decomposition for non-vertex-transitive subgraphs is a generalisation
+    of the original paper's uniform-cardinality assumption, described in
+    `sequential-conditional-sampling.md`.
 
-The standard configuration model generates networks by randomly pairing
-"stubs" (half-edges). This produces networks with a given degree sequence
-but near-zero clustering — the probability that two neighbours of a node
-are themselves connected is vanishingly small for sparse networks.
+## Architecture
 
-Real networks (social, biological, infrastructure) exhibit significant
-clustering. The CCM addresses this by reserving a fraction of each node's
-stubs for participation in small, dense substructures (motifs) before
-pairing the remainder randomly.
+The configuration model is exposed through a **config → graph** pipeline:
+
+```python
+ConfigModelConfig(n, degrees, sequences) → ConfigModelGraph.from_config() → CSR adjacency
+```
+
+This replaces the older `configuration_model(degrees, phi)` function API with
+a two-tier architecture:
+
+- **Vanilla CM** — when `sequences` is empty, pairs stubs from the degree sequence
+- **Clustered CM** — when `sequences` contains one or more `SubgraphSequence`
+  entries, embeds subgraph instances before pairing remaining singles
 
 ## Algorithm pipeline
 
-The CCM proceeds in five steps:
+### Vanilla configuration model (no sequences)
 
-### Step 1: Stub allocation
+1. Shuffle and pair stubs from the degree sequence
+2. On a self-loop or multi-edge collision, reselect: reshuffle the
+   remaining stubs and retry, rather than discarding the pair (the
+   *matching algorithm* — see [Degree preservation guarantee](#degree-preservation-guarantee) below)
+3. Assemble into a symmetric adjacency matrix
 
-Each node $i$ receives $k_i$ stubs (one per unit of degree), sampled from
-the target degree distribution.
+### Clustered model (with subgraph sequences)
 
-### Step 2: Partition into corners and singles
+1. **Sample** — for each `SubgraphSequence`, draw a participation sequence from
+   the specified distribution (e.g. `poisson(0.3)`)
+2. **Split by orbit** — for non-vertex-transitive subgraphs (e.g. diamond, bowtie),
+   assign each node's participations to specific orbit roles using sequential
+   conditional sampling from a shared urn. Vertex-transitive subgraphs (triangle,
+   square, K4) skip this step.
+3. **Allocate** — verify that every node's total subgraph stub cost (sum over
+   orbits of count × orbit_degree) fits within its degree budget
+4. **Connect subgraphs** — for each subgraph type, draw concrete nodes from
+   per-orbit pools, check for duplicate nodes and existing edges, and form the
+   subgraph's internal edges
+5. **Pair singles** — pair remaining single stubs, avoiding edges already formed
+   by subgraphs
+6. **Assemble** — combine all edges into a symmetric CSR adjacency matrix
 
-For each node, stubs are partitioned into two pools:
+On any failure (degree budget exceeded, unresolvable collisions), the pipeline
+retries from step 1 with a fresh sample, up to `max_retries` times.
 
-- **Corners** — stubs allocated to motif participation. The number of
-  corners is drawn from $\text{Binomial}(\lfloor k_i / c \rfloor, \phi)$,
-  where $c$ is the cardinality of the motif (the degree of each corner
-  within the motif).
-- **Singles** — remaining stubs, paired via the standard configuration model.
+## Degree preservation guarantee
 
-The parameter $\phi$ controls the expected fraction of stubs allocated to
-motifs, and thereby the resulting clustering coefficient.
+Preserving the prescribed degree sequence exactly is the central guarantee of the
+configuration model. Two things make that guarantee hold end to end:
 
-### Step 3: Form motif instances
+**Reselection, not discarding.** `Connector.connect_singles` pairs stubs via the
+*matching algorithm* (Milo et al.; Ritchie et al. 2017, JCN §2): on a self-loop or
+multi-edge collision, the remaining stubs are reshuffled and pairing is retried,
+rather than dropping the colliding stubs. Dropping stubs is the naive approach and
+silently violates the degree sequence — this is why it is not used. If a valid
+pairing cannot be found after repeated reselection, `connect_singles` raises
+`ConnectionError` rather than returning a partial graph; `ConfigModelGraph.from_config`
+catches this and resets the whole generation attempt with fresh random state.
 
-Corner stubs are grouped and connected according to the motif's adjacency
-structure. Three strategies handle collisions (when the same node appears
-twice in a group):
+**Verification at the boundary.** `ConfigModelGraph.from_config` checks the realized
+degree sequence against `config.degrees` before returning, raising
+`DegreeMismatchError` on any mismatch. This is a defence against regressions, not
+the primary correctness mechanism — with reselection in place the check should
+never fire in practice. It is deliberately *not* caught by the retry loop: a degree
+mismatch is a correctness bug, not a dead-end configuration to retry past. Set
+`ConfigModelConfig(..., verify_degrees=False)` to skip it for exploratory work where
+approximate degrees are acceptable.
 
-| Strategy | Behaviour | Trade-off |
-|----------|-----------|-----------|
-| **Repeated** | Resample colliding groups individually | Fast, slightly biased |
-| **Refuse** | Reject entire batch on any collision | Unbiased, expensive at high density |
-| **Erased** | Ignore collisions, remove duplicates post-hoc | Fastest, loses edges |
+**What "uniform" does and does not mean.** Degree sequences are preserved *exactly*.
+Sampling is only *approximately* uniform over simple graphs with that degree
+sequence: local reselection introduces a small, measured bias (per-graph deviation
+from uniform ~1-2% typical, ~5% worst case, on small heterogeneous degree sequences),
+with no detectable effect on triangle counts. Exactly uniform sampling requires
+discarding the *entire* pairing and restarting from scratch on any collision — the
+acceptance rate for that is independent of `n` and collapses exponentially in mean
+degree, making it infeasible once mean degree exceeds roughly 6. For dataset
+generation this trade-off is the right one: both sides of a matched comparison are
+generated by the same biased sampler, so the bias is a common-mode term that cancels
+out. If exact uniformity is ever required, the correct tool is edge-swap MCMC on a
+valid starting graph, not rejection sampling.
 
-### Step 4: Pair single stubs
+## Orbit-aware decomposition
 
-Remaining single stubs are paired using the standard configuration model,
-avoiding edges that were already created during motif formation.
+A key contribution over the original paper is support for **non-vertex-transitive
+subgraphs** — subgraphs where not all vertices are equivalent under automorphism.
 
-### Step 5: Assemble
+| Subgraph | Orbits | Transitive? |
+|----------|--------|-------------|
+| Triangle (G2), Square (G5), K4 (G8), K5 (G29) | 1 | Yes |
+| Diamond (G7) | 2 (hubs, leaves) | No |
+| Bowtie (G14), House (G17) | 2–3 | No |
 
-Motif edges and single edges are combined, symmetrised, and cleaned
-(self-loops removed, multi-edges clipped) to produce the final adjacency
-matrix.
-
-## Degree-5 optimisation
-
-For homogeneous degree-5 networks, the CCM uses an analytical allocation
-that mixes K4 cliques and triangles for higher clustering accuracy:
-
-$$\phi = \frac{2 p_3}{5}$$
-
-where $p_3$ is the probability that a node participates in both a K4
-corner and a triangle corner. This achieves higher clustering than the
-general triangle-only fallback.
-
-## Uniform cardinality constraint
-
-The current implementation requires **uniform cardinality** — all corners
-in the motif must have the same degree within the motif. This means
-complete graphs (G2/triangle, G8/K4, G29/K5) and cycles (G5, G12, C6)
-are supported, but mixed-cardinality motifs like G7 (diamond) and G14
-(bowtie) raise `MixedCardinalityError`.
+For vertex-transitive subgraphs all vertices are equivalent, so the split step
+is a no-op. For non-transitive subgraphs, the sequential conditional sampling
+algorithm ensures exact orbit proportions without global rejection. See
+`sequential-conditional-sampling.md` for the full algorithm.
 
 ## Usage
 
 ```python
 import numpy as np
-from craeft import configuration_model, global_clustering_coefficient
+from scipy.stats import poisson
+
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
 
 rng = np.random.default_rng(42)
-degrees = np.full(1000, 5)
 
-# phi controls clustering: 0.0 = unclustered, higher = more clustered
-for phi in [0.0, 0.1, 0.2, 0.3]:
-    adj = configuration_model(degrees, phi=phi, rng=rng)
-    cc = global_clustering_coefficient(adj)
-    print(f"phi={phi:.1f} -> clustering={cc:.3f}")
+# --- Vanilla configuration model ---
+degrees = np.full(500, 5)
+config = ConfigModelConfig(n=500, degrees=degrees)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Vanilla CM clustering: {graph.clustering_coefficient:.4f}")
+
+# --- Clustered model with triangles ---
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.2))
+
+config = ConfigModelConfig(
+    n=500,
+    degrees=degrees,
+    sequences=(tri_seq,),
+    max_retries=100,
+)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Clustered CM clustering: {graph.clustering_coefficient:.4f}")
+
+# --- Multiple subgraph types ---
+diamond = Subgraph(adjacency=np.array([[0,1,1,1],[1,0,1,0],[1,1,0,1],[1,0,1,0]]))
+diamond_seq = SubgraphSequence(subgraph=diamond, distribution=poisson(0.1))
+
+config = ConfigModelConfig(
+    n=500,
+    degrees=degrees,
+    sequences=(tri_seq, diamond_seq),
+    max_retries=200,
+)
+graph = ConfigModelGraph.from_config(config, rng)
+print(f"Triangle+diamond clustering: {graph.clustering_coefficient:.4f}")
+
+# Access graph properties
+print(f"Edges: {graph.n_edges}")
+print(f"Degrees: {graph.degrees}")
+adj = graph.to_csr()  # scipy sparse CSR matrix
 ```
+
+## Designing matched clustering
+
+Global clustering is fully determined by a `ConfigModelConfig` *before any graph is
+generated* — the degree sequence pins the denominator (connected triples), and the
+subgraph sequences pin the numerator (expected triangles). `craeft.graphs.metrics`
+exposes this closed form via `designed_clustering` and `designed_triangles`, so a
+matched pair of configs (same degree sequence, same clustering, different higher-order
+structure) can be *designed* rather than found by trial and error.
+
+```python
+import numpy as np
+from scipy.stats import poisson
+
+from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
+from craeft.graphs.configuration_model.sequence import SubgraphSequence
+from craeft.graphs.metrics import designed_clustering, designed_triangles
+
+rng = np.random.default_rng(0)
+degrees = np.full(500, 8, dtype=np.int_)
+
+triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
+tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.3))
+
+config = ConfigModelConfig(n=500, degrees=degrees, sequences=(tri_seq,))
+
+# Designed values are computed directly from the config, no generation required.
+print(f"Designed triangles:  {designed_triangles(config):.1f}")
+print(f"Designed clustering: {designed_clustering(config):.4f}")
+
+graph = ConfigModelGraph.from_config(config, rng)
+
+# The realized value is the designed value plus a by-product term (random
+# closure from stub pairing, plus subgraph overlap) — compare the two:
+print(f"Realized clustering: {graph.clustering_coefficient:.4f}")
+print(f"Graph's own designed value: {graph.designed_clustering:.4f}")
+assert graph.designed_clustering == designed_clustering(config)
+```
+
+`designed_triangles` is the more robust quantity to match across a dataset pair:
+it's an exact expectation on an integer scale, so two configs sharing the same
+`designed_triangles` value are matched on clustering without floating-point
+tolerance games. `unique_triangles(subgraph)` gives the per-instance triangle
+count a new subgraph pattern would contribute, useful when building a
+`SubgraphSequence` around a custom motif and wanting its clustering contribution
+up front.
+
+Because the realized value includes the by-product floor, a matched pair should
+compare `designed_clustering` (or `designed_triangles`) across configs — not the
+realized `clustering_coefficient` on generated graphs, which will differ by a
+small, generation-dependent amount.
+
+## Retry behaviour
+
+The subgraph pipeline uses rejection sampling at multiple levels:
+
+1. **Participation sampling** — the distribution may produce values incompatible
+   with the degree budget (e.g. a node told to participate 5× in triangles with
+   only degree 4). Guarded by `max_iterations` in `_sample_sequence`.
+2. **Orbit splitting** — the sequential urn algorithm detects infeasible splits
+   (e.g. insufficient hub slots remaining). Raises `ValueError`.
+3. **Allocation** — the degree budget check catches overall excess. Raises
+   `AllocationError`.
+4. **Connection** — subgraph connection detects unresolvable collisions (duplicate
+   nodes, existing edges). Raises `ConnectionError`.
+
+All are caught by the outer retry loop in `ConfigModelGraph.from_config`, which
+resamples participation sequences and retries up to `max_retries` times.

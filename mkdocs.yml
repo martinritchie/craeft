@@ -76,18 +76,20 @@ nav:
   - Getting Started: getting-started.md
   - Concepts:
       - Clustered Configuration Model: concepts/ccm.md
+      - Sequential Conditional Sampling: concepts/sequential-conditional-sampling.md
       - Motifs & Notation: concepts/motifs.md
       - Gillespie Algorithm: concepts/gillespie.md
   - API Reference:
       - api/index.md
-      - Network Generation:
-          - Generators: api/generators.md
+      - Graph Generation (new):
           - Configuration Model: api/configuration-model.md
           - Erdos-Renyi: api/erdos-renyi.md
+          - Base Classes: api/generators.md
+          - Metrics: api/metrics.md
+      - Network Generation (legacy):
+          - Generators: api/generators.md
           - Distributions: api/distributions.md
           - Motifs: api/motifs.md
-      - Network Analysis:
-          - Metrics: api/metrics.md
           - Rewiring: api/rewiring.md
       - Simulation:
           - Point Processes: api/point-processes.md
