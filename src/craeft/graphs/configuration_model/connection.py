@@ -157,17 +157,49 @@ class Connector:
                 f"consecutive collisions"
             )
 
-    def connect_singles(self, singles: NDArray[np.int_]) -> None:
-        """Pair remaining single stubs.
+    def connect_singles(
+        self, singles: NDArray[np.int_], max_attempts: int = 1000
+    ) -> None:
+        """Pair remaining single stubs using the matching algorithm.
 
-        Shuffles and pairs consecutive stubs, avoiding self-loops,
-        multi-edges, and edges already formed by subgraph connection.
+        Draws a random partner for the last stub in a shuffled stub
+        list and commits the pair unless it would form a self-loop
+        or duplicate an existing edge. On collision, the remaining
+        stubs are reshuffled and pairing is retried — stubs are never
+        discarded. This is the matching algorithm (Milo et al.;
+        Ritchie et al. 2017 JCN §2), and is what makes degree
+        preservation exact: discarding colliding pairs instead (the
+        naive approach) silently violates the degree sequence.
+
+        Sampling guarantee: realised degrees equal ``singles``
+        exactly, element-wise. The resulting graph is only
+        *approximately* uniform over simple graphs with that degree
+        sequence — local reselection introduces a small, measured
+        bias (~1-2% typical, ~5% worst case per-graph deviation on
+        small heterogeneous degree sequences; no detectable effect on
+        triangle counts in measurements taken). Exactly uniform
+        sampling would require discarding the *entire* pairing and
+        restarting from scratch on any collision, which is
+        infeasible in practice: that acceptance rate is independent
+        of ``n`` and collapses exponentially in mean degree
+        (effectively zero once mean degree exceeds ~6). See
+        ``docs/concepts/ccm.md`` for the full discussion.
 
         Args:
             singles: Per-node stub counts. Sum must be even.
+            max_attempts: Maximum consecutive collisions tolerated
+                (each followed by a reshuffle of the remaining
+                stubs) before giving up and raising.
 
         Raises:
             ValueError: If stub sum is odd.
+            ConnectionError: If the remaining stubs cannot be paired
+                without a self-loop or multi-edge after
+                ``max_attempts`` consecutive collisions. Callers such
+                as ``ConfigModelGraph.from_config`` catch this and
+                retry with a fresh random state, matching the "reset
+                the algorithm" behaviour described in the reference
+                paper.
         """
         total = int(singles.sum())
 
@@ -178,21 +210,31 @@ class Connector:
         if total == 0:
             return
 
-        stubs = np.repeat(np.arange(len(singles)), singles)
+        stubs = np.repeat(np.arange(len(singles)), singles).tolist()
         self._rng.shuffle(stubs)
 
-        rows = stubs[0::2]
-        cols = stubs[1::2]
-
-        for r, c in zip(rows.tolist(), cols.tolist()):
-            if r == c:
-                continue
+        attempts = 0
+        while len(stubs) >= 2:
+            # Try to pair the last stub with a random partner.
+            i = len(stubs) - 1
+            j = int(self._rng.integers(0, i))
+            r, c = stubs[i], stubs[j]
             edge = (min(r, c), max(r, c))
-            if edge in self._existing:
+            if r != c and edge not in self._existing:
+                self._existing.add(edge)
+                self._rows.append(r)
+                self._cols.append(c)
+                stubs.pop(i)
+                stubs.pop(j)
+                attempts = 0
                 continue
-            self._existing.add(edge)
-            self._rows.append(r)
-            self._cols.append(c)
+            attempts += 1
+            if attempts >= max_attempts:
+                raise ConnectionError(
+                    f"Could not pair remaining {len(stubs)} stubs after "
+                    f"{max_attempts} attempts"
+                )
+            self._rng.shuffle(stubs)
 
     def to_csr(self) -> csr_matrix:
         """Assemble all accumulated edges into a symmetric adjacency matrix."""

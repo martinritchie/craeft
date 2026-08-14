@@ -1,11 +1,15 @@
 """Tests for single stub pairing via Connector."""
 
+from collections import Counter
+
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 from scipy.sparse import csr_matrix
+from scipy.stats import poisson
 
-from craeft.graphs.configuration_model.connection import Connector
+from craeft.graphs.configuration_model.connection import ConnectionError, Connector
+from craeft.graphs.configuration_model.sequence import sample_degree_sequence
 
 
 def _pair(degrees: NDArray[np.int_], rng: np.random.Generator) -> csr_matrix:
@@ -23,11 +27,12 @@ class TestConnectorSinglesValidity:
         assert (adj - adj.T).nnz == 0
 
     def test_no_self_loops(self) -> None:
-        adj = _pair(np.array([4, 4, 4, 4]), np.random.default_rng(42))
+        # n=6, degree=4 each: dense but graphical (max degree n-1=5).
+        adj = _pair(np.array([4, 4, 4, 4, 4, 4]), np.random.default_rng(42))
         assert np.all(adj.diagonal() == 0)
 
     def test_no_multi_edges(self) -> None:
-        adj = _pair(np.array([4, 4, 4, 4]), np.random.default_rng(42))
+        adj = _pair(np.array([4, 4, 4, 4, 4, 4]), np.random.default_rng(42))
         assert adj.data.max() <= 1
 
     def test_shape_matches_n(self) -> None:
@@ -68,19 +73,29 @@ class TestConnectorSinglesReproducibility:
 
 
 class TestConnectorSinglesDegreePreservation:
-    """Realised degrees should approximate input (lost edges from cleanup)."""
+    """Realised degrees must exactly equal the input (matching algorithm)."""
 
     @pytest.mark.parametrize("seed", range(10))
-    def test_realised_degrees_at_most_input(self, seed: int) -> None:
-        degrees = np.full(100, 6)
+    def test_degrees_exactly_preserved(self, seed: int) -> None:
+        degrees = np.full(200, 6)
         adj = _pair(degrees, np.random.default_rng(seed))
         realised = np.asarray(adj.sum(axis=1)).flatten()
-        assert np.all(realised <= degrees)
+        assert np.array_equal(realised, degrees)
 
-    def test_mean_degree_close_to_input(self) -> None:
-        """For sparse graphs, cleanup removes few edges."""
-        target = 4
-        degrees = np.full(500, target)
+    def test_degree_distribution_identical(self) -> None:
+        degrees = np.full(200, 6)
         adj = _pair(degrees, np.random.default_rng(42))
-        realised_mean = np.asarray(adj.sum(axis=1)).flatten().mean()
-        assert abs(realised_mean - target) < 0.5
+        realised = np.asarray(adj.sum(axis=1)).flatten()
+        assert Counter(realised.tolist()) == Counter(degrees.tolist())
+
+    def test_heterogeneous_degrees_preserved_exactly(self) -> None:
+        rng = np.random.default_rng(7)
+        degrees = sample_degree_sequence(300, poisson(4), rng)
+        adj = _pair(degrees, rng)
+        realised = np.asarray(adj.sum(axis=1)).flatten()
+        assert np.array_equal(realised, degrees)
+
+    def test_impossible_pairing_raises(self) -> None:
+        """n=2, degrees=[2, 2] can only be realised with a multi-edge."""
+        with pytest.raises(ConnectionError):
+            _pair(np.array([2, 2]), np.random.default_rng(42))
