@@ -405,7 +405,6 @@ accepts a prescribed decomposition:
 ```python
 SubgraphSequence(
     subgraph=diamond,
-    distribution=poisson(1),
     orbit_counts={0: hub_counts, 1: leaf_counts},
 )
 ```
@@ -416,10 +415,24 @@ early-return (a single-orbit subgraph can still be prescribed; it just
 has one key). The participation sequence and RNG passed to
 `_split_by_orbit` are ignored in this case.
 
-### Validation
+`distribution` is omitted above, and that is deliberate: a fully
+prescribed sequence has no participations left to draw, so
+`from_config` never calls `sample` for it. Supply `distribution` *or*
+`orbit_counts`; a sequence with neither is rejected on construction.
+(Passing both is allowed but the distribution is inert — the
+prescription wins.) Because the prescription also pins the instance
+count exactly, `SubgraphSequence.num_instances` returns that integer
+$M$ rather than `None`, and the designed-clustering metrics use it in
+place of $n \cdot \mathbb{E}[s] / |V(H)|$ — making the designed figures
+*exact* for a prescribed sequence rather than correct-in-expectation.
 
-`orbit_counts` is checked eagerly in `__post_init__`, so a malformed
-prescription fails at construction, not partway through generation:
+### Validation happens at two layers
+
+The split is between what a sequence can know about *itself* and what
+only the surrounding config knows.
+
+**On construction (`__post_init__`)** — self-consistency, so a
+malformed prescription fails at the point it is written:
 
 1. **Keys** must equal the orbit labels exactly.
 2. **Arrays** must all be the same length and non-negative.
@@ -429,14 +442,38 @@ prescription fails at construction, not partway through generation:
    made explicit and checked up front. A prescription that would form,
    say, 2 hub-instances but only 1 leaf-instance is rejected.
 
+Note what is *absent*: the array length is not checked against $n$,
+because a `SubgraphSequence` has no idea which network it will be used
+with. Nor is the degree budget, for the same reason.
+
+**Pre-flight in `from_config`** — everything needing the config, run
+**once, before the retry loop**:
+
+4. **Length** of every prescribed array must equal $n$ → `ValueError`.
+5. **Degree budget**: the prescribed sequences' combined stub cost
+   $\sum_o C_{io} \delta_o$ must fit within $k_i$ for every node →
+   `AllocationError` naming the offending nodes.
+
+Placement is the whole point of that second layer. The retry loop
+exists for *stochastic* dead ends — a draw that happened to be
+infeasible, where a fresh draw might not be. A prescription is
+deterministic: if it doesn't fit, it doesn't fit on attempt 200
+either. Left inside the loop, such a failure spends every retry
+rediscovering the same fact and then reports
+`RuntimeError: Failed to generate graph after N retries`, with the
+actual diagnosis demoted to `__cause__`. Hoisting it out keeps the
+error legible and the failure instant.
+
 Row sums (does $\sum_o C_{io}$ match a real participation count for node
-$i$?) are *not* checked here — `orbit_counts` fully replaces the
-participation sequence, so there's nothing to compare against at this
-stage. What *is* still enforced downstream is the degree budget: a
-prescribed split can demand more stubs than a node's degree allows,
-exactly as a sampled one can. `allocate_subgraphs` runs unconditionally
-in the pipeline and raises `AllocationError` if so — a bad prescription
-is surfaced, never silently repaired.
+$i$?) are still not checked anywhere — `orbit_counts` fully replaces the
+participation sequence, so there is nothing to compare against.
+
+When prescribed and sampled sequences are mixed, the pre-flight budget
+check covers the prescribed ones only: passing it is necessary but not
+sufficient, and `allocate_subgraphs` remains the authoritative check
+inside the loop. Failing it is conclusive — the prescription cannot fit
+whatever is sampled alongside it. Either way a bad prescription is
+surfaced, never silently repaired.
 
 ### Building a prescription: two helpers
 
@@ -457,9 +494,11 @@ clustered subgraphs onto hubs" construction. Ranks orbits by
 within-subgraph degree $\delta_o$ (hub roles first) and nodes by
 network degree (highest first), then greedily fills each orbit's
 target from the highest-remaining-degree nodes with capacity left. This
-is the placement the 2017 paper used to reach $C = 0.67$ (§3.3) — doing
-it deliberately, rather than as a side effect of greedy allocation
-order, makes the resulting assortativity shift (ticket 005) a
+is the 2017 paper's §3.3 construction, which "opted to push the
+clustered subgraphs onto the higher-degree nodes to accentuate the
+effect of clustering" and produced measurably more assortative networks
+(2017 Fig. 8). Doing it deliberately, rather than as a side effect of
+greedy allocation order, makes that assortativity shift (ticket 005) a
 controlled variable instead of an incidental one.
 
 Both helpers keep the vertex-transitive early return: a single-orbit

@@ -499,3 +499,58 @@ class TestVertexTransitiveUnaffected:
         result = split_by_degree_rank(parts, degrees, seq)
         assert set(result.keys()) == {0}
         np.testing.assert_array_equal(result[0], parts)
+
+
+# -- distribution is optional when fully prescribed (ticket 007, gap 3) -------
+
+
+class TestDistributionOptional:
+    """A fully prescribed sequence has nothing left to sample, so it
+    must not be forced to carry a participation distribution."""
+
+    PRESCRIBED = {
+        0: np.array([2, 1, 1, 0], dtype=np.int_),  # sum=4, sigma_0=2 -> M=2
+        1: np.array([1, 1, 1, 1], dtype=np.int_),  # sum=4, sigma_1=2 -> M=2
+    }
+
+    def test_constructs_without_distribution(self) -> None:
+        seq = SubgraphSequence(subgraph=DIAMOND, orbit_counts=self.PRESCRIBED)
+        assert seq.distribution is None
+
+    def test_neither_distribution_nor_orbit_counts_raises(self) -> None:
+        with pytest.raises(ValueError, match="distribution"):
+            SubgraphSequence(subgraph=DIAMOND)
+
+    def test_sample_without_distribution_raises(self) -> None:
+        seq = SubgraphSequence(subgraph=DIAMOND, orbit_counts=self.PRESCRIBED)
+        with pytest.raises(ValueError, match="distribution"):
+            seq.sample(4, np.random.default_rng(0))
+
+    def test_split_by_orbit_works_without_distribution(self) -> None:
+        seq = SubgraphSequence(subgraph=DIAMOND, orbit_counts=self.PRESCRIBED)
+        result = seq._split_by_orbit(
+            np.zeros(4, dtype=np.int_), np.random.default_rng(0)
+        )
+        np.testing.assert_array_equal(result[0], self.PRESCRIBED[0])
+        np.testing.assert_array_equal(result[1], self.PRESCRIBED[1])
+
+
+class TestNumInstances:
+    """A prescription pins the instance count M exactly; a sampled
+    sequence only knows it in expectation, so reports None."""
+
+    def test_exact_when_prescribed(self) -> None:
+        counts = {
+            0: np.array([2, 1, 1, 0], dtype=np.int_),
+            1: np.array([1, 1, 1, 1], dtype=np.int_),
+        }
+        seq = SubgraphSequence(subgraph=DIAMOND, orbit_counts=counts)
+        assert seq.num_instances == 2
+
+    def test_exact_when_prescribed_vertex_transitive(self) -> None:
+        counts = {0: np.array([2, 1, 3], dtype=np.int_)}  # sum=6, sigma_0=3
+        seq = SubgraphSequence(subgraph=TRIANGLE, orbit_counts=counts)
+        assert seq.num_instances == 2
+
+    def test_none_when_sampled(self) -> None:
+        assert _seq(DIAMOND).num_instances is None

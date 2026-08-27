@@ -82,11 +82,21 @@ def triangles_per_orbit(sequence: SubgraphSequence) -> dict[int, int]:
 
 
 def _expected_instances(sequence: SubgraphSequence, n: int) -> float:
-    """Expected number of subgraph instances implied by a sequence's distribution.
+    """Number of subgraph instances implied by a sequence.
 
-    `n * mean(distribution) / subgraph.num_nodes` — total expected
-    participation divided by the number of stubs consumed per instance.
+    When the sequence is prescribed (ticket 007), the instance count is
+    not an expectation at all: `orbit_counts` pins it exactly, and its
+    validation has already established a common `M` across orbits. Use
+    it — the designed figures downstream become exact rather than
+    correct-in-expectation, and `n` is irrelevant because the
+    prescription already names every node.
+
+    Otherwise, `n * mean(distribution) / subgraph.num_nodes` — total
+    expected participation divided by the stubs consumed per instance.
     """
+    if sequence.num_instances is not None:
+        return float(sequence.num_instances)
+    assert sequence.distribution is not None  # enforced in __post_init__
     return n * sequence.distribution.mean() / sequence.subgraph.num_nodes
 
 

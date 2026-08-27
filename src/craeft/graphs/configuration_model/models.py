@@ -63,6 +63,89 @@ class DegreeMismatchError(Exception):
     """Raised when the realized degree sequence differs from the prescribed one."""
 
 
+# How many offending nodes to name before truncating the message.
+_MAX_NODES_IN_ERROR = 5
+
+
+def _preflight_prescribed(config: ConfigModelConfig) -> None:
+    """Validate prescribed orbit splits once, before the retry loop.
+
+    ``SubgraphSequence.__post_init__`` can only check what a sequence
+    knows about itself — orbit keys, equal array lengths, per-orbit
+    totals of the form ``M * sigma_o``. Two things it cannot see are
+    ``n`` and the degree sequence, and both are only known here.
+
+    Placement matters as much as the checks. A prescription is
+    *deterministic*: if it is the wrong length or over budget, it is
+    wrong on every attempt. Letting such a failure fall into the retry
+    loop — which exists for *stochastic* dead ends — spends all
+    ``max_retries`` attempts reaching the same conclusion and then
+    reports a generic ``RuntimeError``, burying the real diagnosis in
+    ``__cause__``. Running once, up front, keeps the error legible.
+
+    Args:
+        config: Configuration model configuration.
+
+    Raises:
+        ValueError: If a prescribed count array's length differs
+            from ``config.n``.
+        AllocationError: If the prescribed sequences alone exceed any
+            node's degree budget.
+
+    Note:
+        The budget check covers the *prescribed* sequences only, so
+        when sampled sequences are also present it is necessary but
+        not sufficient — passing it does not guarantee the combined
+        cost fits. ``allocate_subgraphs`` remains the authoritative
+        check inside the loop. Failing it, though, is conclusive:
+        the prescription cannot fit no matter what is sampled.
+    """
+    prescribed = [
+        (idx, seq)
+        for idx, seq in enumerate(config.sequences)
+        if seq.orbit_counts is not None
+    ]
+    if not prescribed:
+        return
+
+    for idx, seq in prescribed:
+        assert seq.orbit_counts is not None  # guarded by the filter above
+        for orbit, counts in seq.orbit_counts.items():
+            if len(counts) != config.n:
+                msg = (
+                    f"Prescribed orbit_counts for sequence {idx}, orbit "
+                    f"{orbit} has length {len(counts)}, but n is {config.n}. "
+                    "A prescription must give a count for every node."
+                )
+                raise ValueError(msg)
+
+    cost = np.zeros(config.n, dtype=np.int_)
+    for _, seq in prescribed:
+        assert seq.orbit_counts is not None
+        for orbit, counts in seq.orbit_counts.items():
+            cost += np.asarray(counts, dtype=np.int_) * seq.orbit_degrees[orbit]
+
+    over = np.flatnonzero(cost > config.degrees)
+    if over.size == 0:
+        return
+
+    named = ", ".join(
+        f"node {int(i)} needs {int(cost[i])} but has {int(config.degrees[i])}"
+        for i in over[:_MAX_NODES_IN_ERROR]
+    )
+    if over.size > _MAX_NODES_IN_ERROR:
+        named += f", and {int(over.size) - _MAX_NODES_IN_ERROR} more"
+    msg = (
+        f"Prescribed orbit_counts exceed the degree budget for "
+        f"{int(over.size)} of {config.n} node(s) "
+        f"({over.size / config.n:.1%}): {named}. "
+        "A prescribed split is deterministic, so retrying cannot help "
+        "and it is not silently repaired — adjust the prescription or "
+        "the degree sequence."
+    )
+    raise AllocationError(msg)
+
+
 def _verify_degrees(graph: ConfigModelGraph, config: ConfigModelConfig) -> None:
     """Raise DegreeMismatchError if realized degrees differ from config.degrees.
 
@@ -137,6 +220,13 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
 
         Raises:
             RuntimeError: If all retries exhausted.
+            ValueError: If a prescribed ``orbit_counts`` array's length
+                differs from ``config.n`` (raised by the pre-flight
+                check, before the retry loop).
+            AllocationError: If prescribed sequences alone exceed the
+                degree budget. Also from the pre-flight check: a
+                prescription is deterministic, so this is settled once
+                rather than rediscovered on every retry.
             DegreeMismatchError: If config.verify_degrees is True and the
                 realized degree sequence differs from config.degrees. Not
                 caught by the retry loop above: a mismatch is a correctness
@@ -148,6 +238,11 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
             graph = cls(connector.to_csr(), config=config)
             _verify_degrees(graph, config)
             return graph
+
+        # Anything deterministic is settled before the loop, so a bad
+        # prescription raises its own diagnosis rather than max_retries
+        # copies of it wrapped in a RuntimeError.
+        _preflight_prescribed(config)
 
         # Subgraph sequence pipeline
         last_exc: Exception | None = None
@@ -183,6 +278,17 @@ class ConfigModelGraph(UndirectedGraph[ConfigModelConfig]):
                 # cap only needs to fix the dominant single-sequence
                 # failure mode, not guarantee success in every case.
                 for seq in config.sequences:
+                    if seq.orbit_counts is not None:
+                        # Ticket 007: a prescribed split names every
+                        # node's per-orbit count outright, so there is
+                        # no participation to sample. Sampling here and
+                        # discarding the result in ``_split_by_orbit``
+                        # would burn entropy, force a `distribution` on
+                        # a sequence that needs none, and let a sampled
+                        # sequence silently disagree with the
+                        # prescription that overrides it.
+                        decompositions.append(seq.orbit_counts)
+                        continue
                     max_stub_cost = max(seq.orbit_degrees.values())
                     max_per_node = config.degrees // max_stub_cost
                     parts = seq.sample(config.n, rng, max_per_node=max_per_node)

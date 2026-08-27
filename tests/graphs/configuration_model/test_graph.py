@@ -360,6 +360,165 @@ class TestAllocationErrorDetection:
 
 
 # ---------------------------------------------------------------------------
+# Prescribed orbit splits: pre-flight validation (ticket 007, gaps 1-3)
+# ---------------------------------------------------------------------------
+
+# K4 minus edge 1-3. Orbit 0 = {0, 2} (degree 3), orbit 1 = {1, 3} (degree 2).
+DIAMOND_ADJ = np.array([[0, 1, 1, 1], [1, 0, 1, 0], [1, 1, 0, 1], [1, 0, 1, 0]])
+
+_PRESCRIBED_N = 40
+
+
+def _prescribed_diamond_counts() -> dict[int, np.ndarray]:
+    """M=10 diamond instances over 40 nodes.
+
+    Nodes 0-19 each take one orbit-0 (hub, 3 stubs) participation;
+    nodes 20-39 each take one orbit-1 (tip, 2 stubs). Both totals are
+    20 = M * sigma_o with sigma_0 = sigma_1 = 2, so M = 10 throughout.
+    """
+    hub = np.zeros(_PRESCRIBED_N, dtype=np.int_)
+    hub[:20] = 1
+    tip = np.zeros(_PRESCRIBED_N, dtype=np.int_)
+    tip[20:] = 1
+    return {0: hub, 1: tip}
+
+
+def _prescribed_config(
+    degree: int = 6,
+    counts: dict[int, np.ndarray] | None = None,
+    n: int = _PRESCRIBED_N,
+    max_retries: int = 100,
+) -> ConfigModelConfig:
+    seq = SubgraphSequence(
+        subgraph=Subgraph(adjacency=DIAMOND_ADJ),
+        orbit_counts=_prescribed_diamond_counts() if counts is None else counts,
+    )
+    return ConfigModelConfig(
+        n=n,
+        degrees=np.full(n, degree, dtype=np.int_),
+        sequences=(seq,),
+        max_retries=max_retries,
+    )
+
+
+class TestPrescribedSplitPreflightLength:
+    """Gap 1: array length must be checked against n, and checked
+    where the failure is legible — not left to die inside the retry
+    loop as an opaque RuntimeError."""
+
+    def test_length_mismatch_raises_value_error(self) -> None:
+        short = {
+            0: np.array([1, 1, 0, 0, 1, 1, 0, 0], dtype=np.int_),  # len 8, n=40
+            1: np.array([1, 1, 0, 0, 1, 1, 0, 0], dtype=np.int_),
+        }
+        config = _prescribed_config(counts=short)
+        with pytest.raises(ValueError, match="length"):
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+    def test_length_mismatch_is_not_retry_exhaustion(self) -> None:
+        """The message must name the real problem, not 'failed after
+        N retries' with the cause buried in __cause__."""
+        short = {
+            0: np.array([1, 1, 0, 0, 1, 1, 0, 0], dtype=np.int_),
+            1: np.array([1, 1, 0, 0, 1, 1, 0, 0], dtype=np.int_),
+        }
+        config = _prescribed_config(counts=short)
+        with pytest.raises(ValueError) as exc_info:
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+        msg = str(exc_info.value)
+        assert "retries" not in msg
+        assert "8" in msg  # the offending length
+        assert "40" in msg  # n
+
+
+class TestPrescribedSplitPreflightBudget:
+    """Gap 2: an over-budget prescription is deterministic, so every
+    retry fails identically. Fail once, loudly, before the loop."""
+
+    def test_over_budget_raises_allocation_error(self) -> None:
+        from craeft.graphs.configuration_model.sequence import (  # noqa: PLC0415
+            AllocationError,
+        )
+
+        # Hub nodes need 3 stubs; degree 2 cannot pay.
+        config = _prescribed_config(degree=2)
+        with pytest.raises(AllocationError):
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+    def test_over_budget_message_names_offending_nodes(self) -> None:
+        from craeft.graphs.configuration_model.sequence import (  # noqa: PLC0415
+            AllocationError,
+        )
+
+        config = _prescribed_config(degree=2)
+        with pytest.raises(AllocationError) as exc_info:
+            ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+        msg = str(exc_info.value)
+        assert "prescribed" in msg.lower()
+        assert "20 of 40" in msg  # nodes 0-19 are the hubs
+        assert "node 0" in msg
+
+    def test_over_budget_does_not_burn_retries(self) -> None:
+        """A deterministic failure must not be retried at all — the
+        check runs before the loop, so max_retries is irrelevant."""
+        from craeft.graphs.configuration_model.sequence import (  # noqa: PLC0415
+            AllocationError,
+        )
+
+        attempts = 0
+        original = Connector.__init__
+
+        def counting_init(self, n, rng):  # type: ignore[no-untyped-def]
+            nonlocal attempts
+            attempts += 1
+            original(self, n, rng)
+
+        config = _prescribed_config(degree=2, max_retries=100)
+        with pytest.MonkeyPatch.context() as mp:
+            mp.setattr(Connector, "__init__", counting_init)
+            with pytest.raises(AllocationError):
+                ConfigModelGraph.from_config(config, np.random.default_rng(0))
+
+        assert attempts == 0
+
+
+class TestPrescribedSplitBypassesSampling:
+    """Gap 3: from_config must not sample participations it is going
+    to discard."""
+
+    def test_generates_without_a_distribution(self) -> None:
+        config = _prescribed_config()
+        graph = ConfigModelGraph.from_config(config, np.random.default_rng(3))
+        assert graph.n_nodes == _PRESCRIBED_N
+        assert np.array_equal(graph.degrees, config.degrees)
+
+    def test_sample_is_never_called(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        def boom(*args: object, **kwargs: object) -> None:
+            msg = "sample() called for a fully prescribed sequence"
+            raise AssertionError(msg)
+
+        monkeypatch.setattr(SubgraphSequence, "sample", boom)
+        config = _prescribed_config()
+        graph = ConfigModelGraph.from_config(config, np.random.default_rng(3))
+        assert graph.n_nodes == _PRESCRIBED_N
+
+    def test_allocation_identical_across_seeds(self) -> None:
+        """The point of the ticket, at the from_config layer: the
+        per-node orbit assignment no longer depends on the seed."""
+        config = _prescribed_config()
+        expected = _prescribed_diamond_counts()
+        for seed in range(4):
+            decomp = config.sequences[0]._split_by_orbit(
+                np.zeros(_PRESCRIBED_N, dtype=np.int_),
+                np.random.default_rng(seed),
+            )
+            np.testing.assert_array_equal(decomp[0], expected[0])
+            np.testing.assert_array_equal(decomp[1], expected[1])
+
+
+# ---------------------------------------------------------------------------
 # Degree preservation verification (ticket 002)
 # ---------------------------------------------------------------------------
 

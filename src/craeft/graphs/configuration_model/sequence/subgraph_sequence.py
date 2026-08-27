@@ -108,6 +108,10 @@ class SubgraphSequence:
         subgraph: The subgraph structure to embed.
         distribution: Frozen scipy discrete distribution for
             per-node participation counts (e.g. poisson(1)).
+            Optional, but only when ``orbit_counts`` is given: a
+            fully prescribed sequence has no participations left to
+            sample, so requiring a distribution it would never draw
+            from is noise. Exactly one of the two must be supplied.
         orbit_counts: Prescribed per-node counts per orbit. When
             given, overrides sampling — ``_split_by_orbit`` returns
             it unchanged instead of drawing from the urn. Validated
@@ -117,10 +121,16 @@ class SubgraphSequence:
             ``M * orbit_sizes[o]`` for a common integer ``M`` across
             all orbits (the invariant the urn sampler otherwise
             enforces implicitly).
+
+            Array *length* is deliberately not checked here — a
+            sequence does not know the ``n`` it will be used with.
+            ``ConfigModelGraph.from_config`` checks it, along with
+            the degree budget, in a single pre-flight pass before
+            generation.
     """
 
     subgraph: Subgraph
-    distribution: rv_discrete
+    distribution: rv_discrete | None = None
     orbit_counts: dict[int, NDArray[np.int_]] | None = None
 
     def __post_init__(self) -> None:
@@ -144,6 +154,14 @@ class SubgraphSequence:
             "_cached_is_vertex_transitive",
             len(set(object.__getattribute__(self, "_cached_orbits"))) == 1,
         )
+        object.__setattr__(self, "_cached_num_instances", None)
+        if self.distribution is None and self.orbit_counts is None:
+            msg = (
+                "SubgraphSequence needs either a distribution (to sample "
+                "participations from) or orbit_counts (a prescribed split); "
+                "got neither"
+            )
+            raise ValueError(msg)
         if self.orbit_counts is not None:
             self._validate_orbit_counts()
 
@@ -200,6 +218,11 @@ class SubgraphSequence:
             )
             raise ValueError(msg)
 
+        # The common M is now known exactly — cache it so downstream
+        # metrics can use the prescribed instance count rather than the
+        # distribution's expectation.
+        object.__setattr__(self, "_cached_num_instances", multiples.pop())
+
     def sample(
         self,
         n: int,
@@ -228,7 +251,19 @@ class SubgraphSequence:
         Returns:
             Array of n non-negative counts whose sum is divisible
             by subgraph.num_nodes.
+
+        Raises:
+            ValueError: If no ``distribution`` was supplied. A fully
+                prescribed sequence has nothing to sample;
+                ``from_config`` skips this call entirely for one.
         """
+        if self.distribution is None:
+            msg = (
+                "sample() requires a distribution, but this sequence has "
+                "none — it is fully prescribed via orbit_counts, so there "
+                "are no participations left to draw"
+            )
+            raise ValueError(msg)
         return _sample_sequence(
             n,
             self.distribution,
@@ -365,6 +400,17 @@ class SubgraphSequence:
     def is_vertex_transitive(self) -> bool:
         """True if all nodes belong to a single orbit."""
         return self._cached_is_vertex_transitive  # type: ignore[attr-defined]
+
+    @property
+    def num_instances(self) -> int | None:
+        """Exact number of subgraph instances, when prescribed.
+
+        A prescription pins the instance count: every orbit's total
+        equals ``M * orbit_sizes[o]`` for the same ``M``, validated on
+        construction. A *sampled* sequence has no such count until a
+        draw is taken — only an expectation — so this returns None.
+        """
+        return self._cached_num_instances  # type: ignore[attr-defined]
 
     def edges_for(self, nodes: NDArray[np.int_]) -> tuple[list[int], list[int]]:
         """Map the subgraph's structure onto concrete node IDs.
