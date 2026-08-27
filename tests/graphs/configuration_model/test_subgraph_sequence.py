@@ -5,11 +5,13 @@ import pytest
 from scipy.stats import poisson
 
 from craeft.graphs.base import Subgraph
+from craeft.graphs.configuration_model import ConfigModelConfig, ConfigModelGraph
 from craeft.graphs.configuration_model.sequence import (
     SubgraphSequence,
     split_by_degree_rank,
     split_deterministic,
 )
+from craeft.graphs.metrics.correlation import degree_assortativity
 
 # -- Test subgraphs ----------------------------------------------------------
 
@@ -412,13 +414,20 @@ class TestSplitByDegreeRank:
     """Assigns high-cardinality (hub) orbits to high-degree nodes."""
 
     def test_degree_rank_split_raises_assortativity(self) -> None:
-        """Pairs with ticket 005 (assortativity metric, not yet built):
-        pushing the higher-degree orbit role onto high-degree nodes is
-        exactly the construction that raises degree assortativity in
-        the 2017 paper. This checks the underlying signature directly —
-        a strong positive correlation between node degree and the
-        stub-cost contributed by the (higher-cardinality) hub orbit —
-        without depending on ticket 005's not-yet-implemented metric.
+        """Fast unit check on the *placement* signature: node degree
+        correlates strongly with the stub cost contributed by the
+        higher-cardinality (hub) orbit. That is the mechanism
+        ``split_by_degree_rank`` implements — hub-like orbit roles land
+        on network hubs.
+
+        This is a proxy: it inspects the split, not a generated graph.
+        The realized consequence for degree-degree mixing is measured
+        end-to-end by
+        ``test_degree_rank_split_lowers_realized_assortativity`` below,
+        which uses ``degree_assortativity`` on actual edges — and finds
+        that this placement *lowers* rather than raises assortativity
+        for the diamond. Keep both: this one pins the split's intended
+        behaviour cheaply, the other pins what it does to the graph.
         """
         seq = _seq(DIAMOND)
         n = 8
@@ -430,6 +439,72 @@ class TestSplitByDegreeRank:
 
         corr = np.corrcoef(degrees, hub_cost)[0, 1]
         assert corr > 0.8
+
+    def test_degree_rank_split_lowers_realized_assortativity(self) -> None:
+        """Integration: the same participation sequence, prescribed two
+        ways, generated, and measured with ``degree_assortativity``.
+
+        Both configs share one degree sequence and one participation
+        sequence, so the *totals* are identical and only the placement
+        of orbit roles differs — a clean A/B on placement alone.
+
+        The result is the opposite of the naive "push clustered
+        subgraphs onto hubs raises assortativity" reading, and the
+        reason is structural. Under ``split_by_degree_rank`` the hub and
+        tip groups are necessarily *disjoint* blocks of the degree
+        ranking (hub slots + tip slots exhaust the participation
+        budget), so hubs are the high-degree block and tips the
+        low-degree one. The diamond has four hub-tip edges for every one
+        hub-hub edge, so four fifths of the designed edges are forced to
+        span the degree gap — disassortative. ``split_deterministic``
+        gives every participant both roles in proportion, leaving the
+        designed edges close to degree-neutral.
+
+        The proxy test above is still right about what the split *does*;
+        this pins what it does to the graph.
+        """
+        seq = _seq(DIAMOND)
+        n = 300
+        # Spread 4..16 so degree_assortativity is well-defined: it
+        # returns nan on a degree-regular graph (zero variance in
+        # edge-end degrees). Sum is even, as ConfigModelConfig requires.
+        degrees = np.array([4 + (i % 13) for i in range(n)], dtype=np.int_)
+        assert int(degrees.sum()) % 2 == 0
+        # One participation each: total 300 is divisible by the
+        # diamond's 4 nodes (M = 75 instances), and the worst-case cost
+        # of a single participation (hub orbit, 3 stubs) fits inside the
+        # smallest degree, so the pre-flight budget check passes for
+        # both prescriptions.
+        parts = np.ones(n, dtype=np.int_)
+
+        rank_counts = split_by_degree_rank(parts, degrees, seq)
+        even_counts = split_deterministic(parts, seq)
+
+        def mean_assortativity(counts: dict[int, np.ndarray]) -> float:
+            config = ConfigModelConfig(
+                n=n,
+                degrees=degrees,
+                sequences=(SubgraphSequence(subgraph=DIAMOND, orbit_counts=counts),),
+            )
+            values = [
+                degree_assortativity(
+                    ConfigModelGraph.from_config(
+                        config, np.random.default_rng(seed)
+                    ).to_csr()
+                )
+                for seed in range(4)
+            ]
+            # Averaged over seeds: a single realization of the leftover
+            # stub pairing is noisy at this size.
+            return float(np.mean(values))
+
+        rank_r = mean_assortativity(rank_counts)
+        even_r = mean_assortativity(even_counts)
+
+        assert np.isfinite(rank_r)
+        assert np.isfinite(even_r)
+        # Observed gap is ~0.15; 0.05 leaves ample room for seed noise.
+        assert rank_r < even_r - 0.05
 
     def test_row_and_column_sums_exact(self) -> None:
         seq = _seq(DIAMOND)
