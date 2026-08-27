@@ -30,6 +30,13 @@ notation** (G0–G29) as the canonical naming scheme.
 | **G7** | K₄ − e (diamond) | 5 | no | 2 | yes |
 | **G8** | Complete K₄ | 6 | yes | 1 | yes |
 
+These six are exactly the connected 4-node isomorphism classes counted by
+[`count_order_four`](../api/metrics.md#order-four-structure) (`path` = G3,
+`star` = G4, `cycle` = G5, `paw` = G6, `diamond` = G7, `complete` = G8).
+G6 is non-Hamiltonian and so cannot be a CCM *input* subgraph — every paw in
+a generated graph is a by-product, which makes its count a sharp diagnostic
+for triangle-bearing families.
+
 ### 5-node graphlets (selected)
 
 | ID | Structure | Edges | Transitive | Hamiltonian |
