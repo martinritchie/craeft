@@ -11,6 +11,10 @@ from craeft.graphs.metrics.correlation import (
     clustering_by_degree,
     degree_assortativity,
 )
+from craeft.graphs.metrics.cycles import (
+    cycles_per_node,
+    induced_cycle_count,
+)
 from craeft.graphs.metrics.order_four import (
     count_order_four,
     order_four_per_node,
@@ -28,10 +32,12 @@ __all__ = [
     "clustering_by_degree",
     "count_order_four",
     "count_triangles",
+    "cycles_per_node",
     "degree_assortativity",
     "designed_clustering",
     "designed_triangles",
     "global_clustering_coefficient",
+    "induced_cycle_count",
     "local_clustering",
     "order_four_per_node",
     "order_four_ratios",

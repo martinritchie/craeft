@@ -26,6 +26,31 @@ graph is generated. See `docs/concepts/ccm.md` for a worked example.
         - designed_triangles
         - designed_clustering
 
+## Induced cycles
+
+Counts of **induced** (chordless) cycles — the only edges among a cycle's
+nodes are the cycle edges themselves. A designed C5 that acquires a chord is
+no longer a C5, so counting it as one would credit the generator with
+structure it did not produce; the chorded variants are separate isomorphism
+classes, reported by [Order-four structure](#order-four-structure).
+
+At length 3 every cycle is trivially chordless, so `induced_cycle_count(a, 3)`
+is the ordinary triangle count and `cycles_per_node(a, 3)` agrees elementwise
+with `triangles_per_node`. Both functions share one enumeration, so
+
+```
+cycles_per_node(a, L).sum() == L * induced_cycle_count(a, L)
+```
+
+holds exactly. Cost scales roughly as `n * mean_degree**(L - 1)` — diagnostic
+metrics for moderate-size networks, not large ones.
+
+::: craeft.graphs.metrics.cycles
+    options:
+      members:
+        - induced_cycle_count
+        - cycles_per_node
+
 ## Degree correlation
 
 ::: craeft.graphs.metrics.correlation
