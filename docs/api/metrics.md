@@ -26,6 +26,66 @@ graph is generated. See `docs/concepts/ccm.md` for a worked example.
         - designed_triangles
         - designed_clustering
 
+## Predicted by-product floor
+
+The other half of the designed-vs-realized picture, also in closed form: how
+much cycle structure a configuration-model *null* throws off on its own, from
+the degree sequence alone. Together with the designed figures above, this says
+what a measured cycle count has to beat before it evidences designed
+structure.
+
+The branching factor is the mean excess degree
+
+$$\kappa = \frac{\langle k(k-1)\rangle}{\langle k \rangle}$$
+
+— the expected number of *further* edges reachable from a node arrived at by
+following a random edge — and the standard configuration-model result is
+
+$$\mathbb{E}[N_L] \to \frac{\kappa^L}{2L}$$
+
+for $N_L$ the number of $L$-cycles.
+
+This reproduces the project's measured by-product cycle floors to ~3–16%
+across regular and heterogeneous degree regimes. Two caveats travel with it:
+
+- It counts **all** cycles. The [induced-cycle](#induced-cycles) floor is
+  slightly lower, and the gap grows with density — measured ~5–15% for
+  hexagons at $\kappa = 9$.
+- It is **asymptotic in n**, and uses the finite-sample $\kappa$. A
+  heavy-tailed sequence therefore reports its actual, cutoff-dependent floor
+  rather than a diverged one.
+
+::: craeft.graphs.metrics.subgraph
+    options:
+      members:
+        - mean_excess_degree
+        - predicted_cycle_floor
+
+## Induced cycles
+
+Counts of **induced** (chordless) cycles — the only edges among a cycle's
+nodes are the cycle edges themselves. A designed C5 that acquires a chord is
+no longer a C5, so counting it as one would credit the generator with
+structure it did not produce; the chorded variants are separate isomorphism
+classes, reported by [Order-four structure](#order-four-structure).
+
+At length 3 every cycle is trivially chordless, so `induced_cycle_count(a, 3)`
+is the ordinary triangle count and `cycles_per_node(a, 3)` agrees elementwise
+with `triangles_per_node`. Both functions share one enumeration, so
+
+```
+cycles_per_node(a, L).sum() == L * induced_cycle_count(a, L)
+```
+
+holds exactly. Cost scales roughly as `n * mean_degree**(L - 1)` — diagnostic
+metrics for moderate-size networks, not large ones.
+
+::: craeft.graphs.metrics.cycles
+    options:
+      members:
+        - induced_cycle_count
+        - cycles_per_node
+
 ## Degree correlation
 
 ::: craeft.graphs.metrics.correlation
