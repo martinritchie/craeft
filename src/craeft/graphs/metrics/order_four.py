@@ -12,24 +12,79 @@ structure look identical.
 Ratios of uniquely counted closed 4-node structures to all unique connected
 4-node structures (open and closed):
 
-- `phi_4_1` -- empty square (chordless 4-cycle)
+- `phi_4_1` -- **the aggregate**: proportion of *all* closed quadruples
+- `phi_4_2` -- empty square (chordless 4-cycle)
 - `phi_4_3` -- square with one diagonal (diamond)
 - `phi_4_4` -- complete square (K4)
-- `unclosed` (1 - phi_4) -- everything else
+- `unclosed` (1 - phi_4_1) -- everything else
+
+with `phi_4_1 == phi_4_2 + phi_4_3 + phi_4_4`, an identity 2014 Table 2
+satisfies row by row.
+
+.. warning::
+   Until ticket 008 this module returned the **empty square** under the key
+   `phi_4_1`, and returned no aggregate at all. That numbering came from a
+   ``pdftotext`` transcription that dropped a superscript; the published PDF
+   (p. 24 Section 2.2 item 4, and Table 2 on p. 28) is authoritative and is
+   what the keys above now follow. Any recorded `phi_4_1` value from before
+   that fix is an empty-square ratio and should be read as `phi_4_2`.
 
 The paper counts each structure **uniquely** (once), not multiplicatively,
-for tractability. See `order_four_ratios` for the caveat this creates.
+for tractability. See below for the caveat this creates.
+
+## The denominator, and why these values are not comparable to 2014 Table 2
+
+The paper gives two different denominators one sentence apart (p. 24, item 4):
+first *"to all connected structures of 4 nodes"*, then *"global ratios of
+unique order-four structure counts to all unique paths counts, closed and
+unclosed"*. These are **not the same set**. Appendix A.2's algorithm is path
+extension, so it implements the second reading -- and a star K(1,3) contains
+no 4-node path, so it can never be enumerated by it. (Appendix A.3's eq. (23)
+confirms this from the paper's own algebra: a star scores exactly 0 there.)
+
+This module implements the **first** reading: the denominator is the count of
+connected 4-node *induced subgraphs*, all six isomorphism classes, stars
+included. Measured on this library's own generated families, **stars are
+21-27% of that denominator**, so the two readings differ by roughly 30-36% in
+every phi_4^i. A second-order difference compounds it: the paper counts
+*paths*, and one induced subgraph contains several distinct ones (a paw
+contains 2, a diamond 12), so its denominator is not a subgraph count at all.
+
+**Consequence: craeft's phi_4^i are internally consistent and comparable
+across generated families, but are NOT numerically comparable with 2014
+Table 2.** A paper-faithful path-count variant is deliberately not
+implemented -- it needs A.2's path enumeration with circular- and
+reverse-permutation elimination, not a subgraph census. Raise a ticket if
+reproducing Table 2's absolute values ever becomes a requirement.
 
 ## A sixth class not named by the paper's typology
 
-Connected 4-node graphs actually come in six isomorphism classes, not five:
-alongside path, star (both open/tree), and cycle/diamond/complete (the three
-"square plus 0/1/2 diagonals" closed classes named above), there is **paw**
--- a triangle with a pendant edge. It cannot arise from this library's own
-Hamiltonian-cycle-based subgraph patterns (see `graphs.base.Subgraph`), but
-can appear incidentally in a generated graph. `count_order_four` reports it
-explicitly; `order_four_ratios` folds it into the `unclosed` bucket, since it
-is not one of the three named closed classes but does contain a triangle.
+Connected 4-node graphs come in six isomorphism classes, not five: alongside
+path, star (both open/tree), and cycle/diamond/complete (the three "square
+plus 0/1/2 diagonals" closed classes named above), there is **paw** -- a
+triangle with a pendant edge, catalogued as **G6** in `docs/concepts/motifs.md`
+(Przulj graphlet notation).
+
+Both `count_order_four` and `order_four_ratios` report it explicitly, and
+`order_four_ratios` *also* counts it inside `unclosed`. That is not a choice
+this library makes: the paper defines its ratios over *"4-node structures
+connected in a loop"*, and a paw contains no 4-cycle, so it is unclosed by
+the paper's own definition. `paw` is therefore a **component of `unclosed`**,
+not a seventh term -- the five terms `phi_4_2 + phi_4_3 + phi_4_4 + unclosed`
+already sum to 1 without it.
+
+It is worth reporting because it is the most sensitive order-four
+discriminator available for triangle-bearing families: a paw is the
+by-product signature of a designed triangle (any triangle plus one external
+edge makes one). Measured at n=1000, <k>=4 (`dev/control_audit.py`
+section G): 0.59-0.68% of connected quadruples in the {Null, C4, C5, C6}
+cycle families and flat across all four, but **7.4% (diamond) and 15.3%
+(K4)**, where paws outnumber the *designed* structures 21x and 40x
+respectively.
+
+A paw cannot arise from this library's own subgraph patterns -- the CCM
+requires a Hamiltonian cycle and G6 has none -- so it is structurally
+impossible as an *input* subgraph, and every paw observed is a by-product.
 
 ## Unique vs multiplicative counts (2014 Appendix A.3, open conjecture)
 
@@ -37,9 +92,25 @@ Unique counts (used here, matching the papers) are not what a pairwise ODE
 closure needs. The 2014 paper conjectures -- but does not establish -- that
 the conversion factor to a multiplicative count is each structure's
 automorphism group order: 6 (triangle), 2 (3-path), 8 (empty square), 4
-(diamond), 24 (K4). This module does not implement that conversion; if a
-caller needs it, it should be applied explicitly and the conjecture cited as
-open, not treated as established.
+(diamond), 24 (K4). The two 4-node classes the paper never names have, by
+this project's derivation, |Aut| = 2 (paw) and 6 (star).
+
+.. warning::
+   **The conversion factor is identity-dependent.** Those 4/8/24 figures
+   apply to the *individual* identities, eqs. (24)-(26). Under the
+   *aggregate* identity eq. (23) the weights differ: measured directly, it
+   counts a 3-path 2x, an empty square 8x, a **diamond 12x** (not 4), a
+   **paw 4x** (not 2), a K4 24x and a **star 0x**. So "paw = 2" is right as
+   an automorphism order and **wrong** as an eq.-(23) conversion factor.
+
+   Eq. (23)'s left-hand side enumerates exactly four classes and **omits the
+   paw**, which its right-hand side nonetheless counts 4x each. That is a
+   defect in the published paper, not a transcription artifact; anyone using
+   eq. (23) as the multiplicative denominator undercounts by the paw term.
+
+This module implements no such conversion; if a caller needs one, it should
+be applied explicitly, against the right identity, and the conjecture cited
+as open rather than established.
 """
 
 import igraph as ig
@@ -128,38 +199,50 @@ def count_order_four(adjacency: SparseMatrix) -> dict[str, int]:
 
 
 def order_four_ratios(adjacency: SparseMatrix) -> dict[str, float]:
-    """phi_4^1, phi_4^3, phi_4^4 and 1 - phi_4 (2014 Section 2.2, item 4).
+    """phi_4^1..phi_4^4, 1 - phi_4^1 and paw (2014 Section 2.2, item 4).
 
     Denominator is the *true* total of connected 4-node induced subgraphs
-    (all six classes, including `paw` -- see the module docstring), so the
-    four returned values always sum to 1.
+    (all six classes, `paw` and `star` included). **This is one of the
+    paper's two mutually inconsistent denominators, and the values are
+    therefore not comparable with 2014 Table 2** -- see the module docstring,
+    which quotes both phrasings and gives the measured size of the gap.
 
     Args:
         adjacency: Symmetric adjacency matrix.
 
     Returns:
-        Dict with keys `phi_4_1` (empty square / chordless 4-cycle),
-        `phi_4_3` (diamond), `phi_4_4` (complete / K4), and `unclosed`
-        (1 - phi_4: path, star and paw combined). All zero if the network
-        has no connected 4-node induced subgraphs.
+        Dict with keys `phi_4_1` (aggregate: all closed quadruples),
+        `phi_4_2` (empty square / chordless 4-cycle), `phi_4_3` (diamond),
+        `phi_4_4` (complete / K4), `unclosed` (1 - phi_4_1: path, star and
+        paw combined) and `paw` (diagnostic; a *component* of `unclosed`,
+        not an additional term). All zero if the network has no connected
+        4-node induced subgraphs.
+
+        Invariants: `phi_4_2 + phi_4_3 + phi_4_4 == phi_4_1`,
+        `phi_4_1 + unclosed == 1`, and `paw <= unclosed`.
 
     Example:
         >>> from scipy.sparse import csr_matrix
         >>> k4 = csr_matrix(np.ones((4, 4)) - np.eye(4))
         >>> order_four_ratios(k4)["phi_4_4"]
         1.0
+        >>> order_four_ratios(k4)["phi_4_1"]
+        1.0
     """
     counts = count_order_four(adjacency)
     total = counts["open_total"] + counts["closed_total"] + counts["paw"]
 
+    keys = ("phi_4_1", "phi_4_2", "phi_4_3", "phi_4_4", "unclosed", "paw")
     if total == 0:
-        return {"phi_4_1": 0.0, "phi_4_3": 0.0, "phi_4_4": 0.0, "unclosed": 0.0}
+        return dict.fromkeys(keys, 0.0)
 
     return {
-        "phi_4_1": counts["cycle"] / total,
+        "phi_4_1": counts["closed_total"] / total,
+        "phi_4_2": counts["cycle"] / total,
         "phi_4_3": counts["diamond"] / total,
         "phi_4_4": counts["complete"] / total,
         "unclosed": (total - counts["closed_total"]) / total,
+        "paw": counts["paw"] / total,
     }
 
 

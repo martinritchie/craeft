@@ -42,6 +42,45 @@ Section 2.2, item 4). Clustering is the *matched* quantity in a dataset
 pair; order-four composition is what actually distinguishes networks with
 identical degree distribution and identical clustering.
 
+### Numbering
+
+`order_four_ratios` follows the published 2014 numbering:
+
+| Key | Meaning |
+|:--|:--|
+| `phi_4_1` | **all closed quadruples** (the aggregate) |
+| `phi_4_2` | empty square (chordless 4-cycle) |
+| `phi_4_3` | square with one diagonal (diamond) |
+| `phi_4_4` | complete square (K₄) |
+| `unclosed` | `1 - phi_4_1` — path, star and paw combined |
+| `paw` | triangle + pendant edge; a *component* of `unclosed`, not a further term |
+
+with `phi_4_1 == phi_4_2 + phi_4_3 + phi_4_4`.
+
+!!! warning "Breaking change (ticket 008)"
+
+    This module previously returned the **empty square** under the key
+    `phi_4_1` and returned no aggregate at all — a transcription error, not
+    the paper's numbering. Any recorded `phi_4_1` value from before that fix
+    should be read as `phi_4_2`.
+
+### Denominator, and comparability with 2014 Table 2
+
+The denominator is the count of connected 4-node **induced subgraphs**, all
+six isomorphism classes, stars included. The 2014 paper gives two different
+denominators one sentence apart, and its Appendix A.2 algorithm implements
+the other one — a count of 4-node *paths*, which a star has none of. Stars
+are 21–27% of craeft's denominator, so **these values are internally
+comparable across generated families but are not numerically comparable with
+2014 Table 2.** A paper-faithful path-count variant is deliberately not
+implemented; see the module docstring for the full argument.
+
+The paw is catalogued as **G6** in
+[Motifs](../concepts/motifs.md) — non-Hamiltonian, and therefore structurally
+impossible as an *input* subgraph to the CCM. Every paw observed in a
+generated graph is a by-product, which is what makes it a sharp diagnostic
+for triangle-bearing families.
+
 ::: craeft.graphs.metrics.order_four
     options:
       members:
