@@ -12,6 +12,8 @@ from craeft.graphs.configuration_model.sequence import SubgraphSequence
 from craeft.graphs.metrics import (
     designed_clustering,
     designed_triangles,
+    mean_excess_degree,
+    predicted_cycle_floor,
     triangles_per_orbit,
     unique_triangles,
 )
@@ -176,6 +178,97 @@ class TestDesignedClustering:
     def test_zero_degree_sequence_is_zero(self) -> None:
         config = ConfigModelConfig(n=10, degrees=np.zeros(10, dtype=np.int_))
         assert designed_clustering(config) == 0.0
+
+
+# ---------------------------------------------------------------------------
+# Branching factor and closed-form cycle floor
+# ---------------------------------------------------------------------------
+
+
+class TestMeanExcessDegree:
+    def test_mean_excess_degree_regular(self) -> None:
+        """A constant-degree sequence has branching factor exactly k - 1."""
+        for k in (2, 3, 4, 6, 10):
+            assert mean_excess_degree(np.full(500, k, dtype=np.int_)) == pytest.approx(
+                k - 1
+            )
+
+    def test_mean_excess_degree_cmodel(self) -> None:
+        """2 * Poisson(2): <k> = 4, <k^2> = 24, so kappa = 5."""
+        rng = np.random.default_rng(11)
+        degrees = 2 * rng.poisson(2, size=200_000)
+        assert mean_excess_degree(degrees) == pytest.approx(5.0, rel=0.05)
+
+    def test_all_zero_degrees_is_zero(self) -> None:
+        assert mean_excess_degree(np.zeros(10, dtype=np.int_)) == 0.0
+
+    def test_heavy_tail_kappa_grows_with_n(self) -> None:
+        """Finite-sample kappa of a power law with divergent <k^2> grows with n."""
+
+        def sampled_kappa(n: int) -> float:
+            values = []
+            for seed in range(5):
+                rng = np.random.default_rng(seed)
+                degrees = np.minimum(rng.zipf(2.5, size=n), int(np.sqrt(n)))
+                values.append(mean_excess_degree(degrees))
+            return float(np.mean(values))
+
+        small = sampled_kappa(1_000)
+        large = sampled_kappa(20_000)
+        assert large > small
+
+
+class TestPredictedCycleFloor:
+    def test_regular_degree_matches_hand_calculation(self) -> None:
+        degrees = np.full(100, 5, dtype=np.int_)
+        # kappa = 4, so kappa**4 / 8 = 32.
+        assert predicted_cycle_floor(degrees, 4) == pytest.approx(32.0)
+
+    def test_predicted_floor_monotone(self) -> None:
+        kappas = [np.full(200, k, dtype=np.int_) for k in (3, 4, 5, 6, 8)]
+
+        # Increasing in kappa, at fixed length.
+        for length in (3, 4, 5, 6):
+            floors = [predicted_cycle_floor(d, length) for d in kappas]
+            assert all(a < b for a, b in zip(floors, floors[1:]))
+
+        # Increasing in length, whenever kappa > 1.
+        for degrees in kappas:
+            floors = [predicted_cycle_floor(degrees, length) for length in (3, 4, 5, 6)]
+            assert all(a < b for a, b in zip(floors, floors[1:]))
+
+        # Never negative, including for degenerate sequences.
+        for degrees in [
+            *kappas,
+            np.zeros(10, dtype=np.int_),
+            np.ones(10, dtype=np.int_),
+        ]:
+            for length in (3, 4, 5, 6):
+                assert predicted_cycle_floor(degrees, length) >= 0.0
+
+    def test_length_below_three_raises(self) -> None:
+        with pytest.raises(ValueError, match="at least 3"):
+            predicted_cycle_floor(np.full(10, 4, dtype=np.int_), 2)
+
+    def test_predicted_floor_matches_empirical(self) -> None:
+        """Smoke test of the formula's regime, not a precision claim."""
+        from craeft.graphs.configuration_model import ConfigModelGraph
+        from craeft.graphs.metrics import induced_cycle_count
+
+        n = 500
+        for degree in (4, 6):
+            degrees = np.full(n, degree, dtype=np.int_)
+            for length in (4, 5):
+                counts = []
+                for seed in (0, 1, 2):
+                    config = ConfigModelConfig(n=n, degrees=degrees)
+                    graph = ConfigModelGraph.from_config(
+                        config, np.random.default_rng(seed)
+                    )
+                    counts.append(induced_cycle_count(graph.to_csr(), length))
+                empirical = float(np.mean(counts))
+                predicted = predicted_cycle_floor(degrees, length)
+                assert predicted / 1.5 <= empirical <= predicted * 1.5
 
 
 # ---------------------------------------------------------------------------

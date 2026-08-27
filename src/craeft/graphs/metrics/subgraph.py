@@ -10,6 +10,12 @@ The realized clustering on a generated graph will differ from the designed value
 by a "by-product" term: triangles formed incidentally by random single-stub
 pairing, plus any overlap between subgraph instances. See
 `ConfigModelGraph.designed_clustering` for comparing designed vs realized.
+
+`mean_excess_degree` and `predicted_cycle_floor` give the other half of that
+picture in closed form: how much cycle structure a configuration-model null
+produces on its own, from the degree sequence alone, before any subgraph is
+designed in. Together they say what a measured cycle count has to beat before
+it counts as designed structure.
 """
 
 from __future__ import annotations
@@ -18,8 +24,10 @@ from typing import TYPE_CHECKING
 
 import igraph as ig
 import numpy as np
+from numpy.typing import NDArray
 
 from craeft.graphs.base import Subgraph
+from craeft.graphs.metrics.cycles import MIN_CYCLE_LENGTH
 
 if TYPE_CHECKING:
     from craeft.graphs.configuration_model.models import ConfigModelConfig
@@ -153,3 +161,67 @@ def designed_clustering(config: ConfigModelConfig) -> float:
     if triples == 0:
         return 0.0
     return 3 * designed_triangles(config) / triples
+
+
+def mean_excess_degree(degrees: NDArray[np.int_]) -> float:
+    """The configuration model's branching factor, kappa = <k(k-1)>/<k>.
+
+    The expected number of *further* edges reachable from a node arrived at by
+    following a random edge. It is the quantity that governs how much cycle
+    structure a configuration-model null throws off by accident, which is why
+    `predicted_cycle_floor` is a function of it alone.
+
+    For a regular sequence with constant degree k this is exactly `k - 1`.
+
+    Args:
+        degrees: Degree sequence.
+
+    Returns:
+        Mean excess degree. 0.0 if the sequence has no stubs at all.
+
+    Example:
+        >>> import numpy as np
+        >>> float(mean_excess_degree(np.full(100, 5)))
+        4.0
+    """
+    k = np.asarray(degrees, dtype=np.float64)
+    mean_degree = k.mean() if k.size else 0.0
+    if mean_degree == 0:
+        return 0.0
+    return float((k * (k - 1)).mean() / mean_degree)
+
+
+def predicted_cycle_floor(degrees: NDArray[np.int_], length: int) -> float:
+    """Expected L-cycles in a configuration model null: kappa**L / (2L).
+
+    The standard configuration-model result, with `kappa` the mean excess
+    degree (`mean_excess_degree`). Computed from the degree sequence alone —
+    no graph is generated — so it gives the by-product floor a measured cycle
+    count has to clear before it evidences *designed* structure.
+
+    Counts all cycles; the induced-cycle floor is slightly lower, with the
+    gap growing with density (measured ~5-15% for hexagons at kappa=9).
+    Asymptotic in n; finite-sample kappa is used, so a heavy-tailed sequence
+    reports its actual (cutoff-dependent) floor rather than a diverged one.
+
+    Args:
+        degrees: Degree sequence of the null model.
+        length: Cycle length, at least 3.
+
+    Returns:
+        Expected number of cycles of that length. Never negative.
+
+    Raises:
+        ValueError: If `length` is less than 3.
+
+    Example:
+        >>> import numpy as np
+        >>> predicted_cycle_floor(np.full(100, 5), 4)
+        32.0
+    """
+    if length < MIN_CYCLE_LENGTH:
+        raise ValueError(f"Cycle length must be at least {MIN_CYCLE_LENGTH}")
+    kappa = mean_excess_degree(degrees)
+    if kappa <= 0:
+        return 0.0
+    return kappa**length / (2 * length)

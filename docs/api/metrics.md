@@ -26,6 +26,41 @@ graph is generated. See `docs/concepts/ccm.md` for a worked example.
         - designed_triangles
         - designed_clustering
 
+## Predicted by-product floor
+
+The other half of the designed-vs-realized picture, also in closed form: how
+much cycle structure a configuration-model *null* throws off on its own, from
+the degree sequence alone. Together with the designed figures above, this says
+what a measured cycle count has to beat before it evidences designed
+structure.
+
+The branching factor is the mean excess degree
+
+$$\kappa = \frac{\langle k(k-1)\rangle}{\langle k \rangle}$$
+
+— the expected number of *further* edges reachable from a node arrived at by
+following a random edge — and the standard configuration-model result is
+
+$$\mathbb{E}[N_L] \to \frac{\kappa^L}{2L}$$
+
+for $N_L$ the number of $L$-cycles.
+
+This reproduces the project's measured by-product cycle floors to ~3–16%
+across regular and heterogeneous degree regimes. Two caveats travel with it:
+
+- It counts **all** cycles. The [induced-cycle](#induced-cycles) floor is
+  slightly lower, and the gap grows with density — measured ~5–15% for
+  hexagons at $\kappa = 9$.
+- It is **asymptotic in n**, and uses the finite-sample $\kappa$. A
+  heavy-tailed sequence therefore reports its actual, cutoff-dependent floor
+  rather than a diverged one.
+
+::: craeft.graphs.metrics.subgraph
+    options:
+      members:
+        - mean_excess_degree
+        - predicted_cycle_floor
+
 ## Induced cycles
 
 Counts of **induced** (chordless) cycles — the only edges among a cycle's

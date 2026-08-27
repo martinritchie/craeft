@@ -23,6 +23,8 @@ from craeft.graphs.metrics.order_four import (
 from craeft.graphs.metrics.subgraph import (
     designed_clustering,
     designed_triangles,
+    mean_excess_degree,
+    predicted_cycle_floor,
     triangles_per_orbit,
     unique_triangles,
 )
@@ -39,8 +41,10 @@ __all__ = [
     "global_clustering_coefficient",
     "induced_cycle_count",
     "local_clustering",
+    "mean_excess_degree",
     "order_four_per_node",
     "order_four_ratios",
+    "predicted_cycle_floor",
     "triangles_per_node",
     "triangles_per_orbit",
     "unique_triangles",
