@@ -1,0 +1,2482 @@
+{
+  "seeds": {
+    "powerlaw_degree_seed_base": 40000,
+    "heavy_tail_build_seed_base": 3100,
+    "spotcheck_build_seed_base": 3500,
+    "cmodel_degree_seed_base": 20000
+  },
+  "i1_predictor_validation": {
+    "tolerance": 0.25,
+    "cells": [
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 4.2,
+        "ratio": 1.0714285714285714,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 8.0,
+        "ratio": 1.265625,
+        "within_tolerance": false
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 21.0,
+        "ratio": 1.1571428571428573,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 62.0,
+        "ratio": 0.9798387096774194,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 6.0,
+        "ratio": 0.75,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 12.8,
+        "ratio": 0.791015625,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 25.8,
+        "ratio": 0.9418604651162791,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.2,
+        "ratio": 1.0261824324324325,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 3.5,
+        "ratio": 1.2857142857142858,
+        "within_tolerance": false
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 8.8,
+        "ratio": 1.1505681818181817,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 23.0,
+        "ratio": 1.056521739130435,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 57.2,
+        "ratio": 1.062062937062937,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 20.5,
+        "ratio": 1.0162601626016259,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 80.2,
+        "ratio": 0.9741271820448878,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 291.8,
+        "ratio": 1.070938999314599,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1206.2,
+        "ratio": 1.0794920687558722,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 25.0,
+        "ratio": 0.8333333333333333,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 78.5,
+        "ratio": 0.9952229299363057,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 292.2,
+        "ratio": 1.0694729637234772,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1244.0,
+        "ratio": 1.0466907824222935,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 23.2,
+        "ratio": 0.8979885057471264,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 84.2,
+        "ratio": 0.9278503562945368,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 313.5,
+        "ratio": 0.9968102073365231,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1260.0,
+        "ratio": 1.033399470899471,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 120.8,
+        "ratio": 1.005794701986755,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 764.5,
+        "ratio": 1.0727599738391105,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5308.8,
+        "ratio": 1.112285262206148,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 37158.5,
+        "ratio": 1.191833631605151,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 127.2,
+        "ratio": 0.955188679245283,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 796.5,
+        "ratio": 1.0296610169491525,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5538.8,
+        "ratio": 1.0660973496064128,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 40107.5,
+        "ratio": 1.1042012092501403,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 123.8,
+        "ratio": 0.981421647819063,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 840.0,
+        "ratio": 0.9763392857142857,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5737.2,
+        "ratio": 1.0292302865509306,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 42282.0,
+        "ratio": 1.0474137931034482,
+        "within_tolerance": true
+      }
+    ],
+    "pooled": [
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 4.566666666666666,
+        "measured_min": 3.5,
+        "measured_max": 6.0,
+        "ratio": 0.9854014598540146,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 9.866666666666667,
+        "measured_min": 8.0,
+        "measured_max": 12.8,
+        "ratio": 1.0261824324324325,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 23.266666666666666,
+        "measured_min": 21.0,
+        "measured_max": 25.8,
+        "ratio": 1.0444126074498568,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.46666666666667,
+        "measured_min": 57.2,
+        "measured_max": 62.0,
+        "ratio": 1.0215807174887892,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 22.900000000000002,
+        "measured_min": 20.5,
+        "measured_max": 25.0,
+        "ratio": 0.9097525473071323,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 80.96666666666665,
+        "measured_min": 78.5,
+        "measured_max": 84.2,
+        "ratio": 0.9649032523672295,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 299.1666666666667,
+        "measured_min": 291.8,
+        "measured_max": 313.5,
+        "ratio": 1.0445682451253482,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1236.7333333333333,
+        "measured_min": 1206.2,
+        "measured_max": 1260.0,
+        "ratio": 1.0528408172066195,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 123.93333333333334,
+        "measured_min": 120.8,
+        "measured_max": 127.2,
+        "ratio": 0.9803657880580957,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 800.3333333333334,
+        "measured_min": 764.5,
+        "measured_max": 840.0,
+        "ratio": 1.0247292794668887,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5528.266666666666,
+        "measured_min": 5308.8,
+        "measured_max": 5737.2,
+        "ratio": 1.068128647918576,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 39849.333333333336,
+        "measured_min": 37158.5,
+        "measured_max": 42282.0,
+        "ratio": 1.1113548532806905,
+        "within_tolerance": true
+      }
+    ],
+    "postfix_and_cmodel": [
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 119.0,
+        "ratio": 1.0210084033613445,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 802.8,
+        "ratio": 1.0215807174887892,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5728.6,
+        "ratio": 1.030775407603952,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 41762.3,
+        "ratio": 1.0604480596135748,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 3.6,
+        "ratio": 1.25,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 12.2,
+        "ratio": 0.8299180327868853,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 25.4,
+        "ratio": 0.9566929133858268,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.0,
+        "ratio": 1.0296610169491525,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 3,
+        "predicted": 20.251641006693543,
+        "measured": 18.9,
+        "ratio": 1.0715153971795526,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 4,
+        "predicted": 75.3217386054988,
+        "measured": 72.9,
+        "ratio": 1.0332200083058818,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 5,
+        "predicted": 298.99865281777824,
+        "measured": 293.1,
+        "ratio": 1.02012505226127,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 6,
+        "predicted": 1237.0987194168792,
+        "measured": 1119.9,
+        "ratio": 1.1046510576095,
+        "within_tolerance": true
+      }
+    ],
+    "asserted_comparisons": 24,
+    "asserted_outside": 0,
+    "pass": true,
+    "all_rows": [
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 4.2,
+        "ratio": 1.0714285714285714,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 8.0,
+        "ratio": 1.265625,
+        "within_tolerance": false
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 21.0,
+        "ratio": 1.1571428571428573,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 500,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 62.0,
+        "ratio": 0.9798387096774194,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 6.0,
+        "ratio": 0.75,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 12.8,
+        "ratio": 0.791015625,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 25.8,
+        "ratio": 0.9418604651162791,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.2,
+        "ratio": 1.0261824324324325,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 3.5,
+        "ratio": 1.2857142857142858,
+        "within_tolerance": false
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 8.8,
+        "ratio": 1.1505681818181817,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 23.0,
+        "ratio": 1.056521739130435,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 4",
+        "n": 2000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 57.2,
+        "ratio": 1.062062937062937,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 20.5,
+        "ratio": 1.0162601626016259,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 80.2,
+        "ratio": 0.9741271820448878,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 291.8,
+        "ratio": 1.070938999314599,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 500,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1206.2,
+        "ratio": 1.0794920687558722,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 25.0,
+        "ratio": 0.8333333333333333,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 78.5,
+        "ratio": 0.9952229299363057,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 292.2,
+        "ratio": 1.0694729637234772,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 1000,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1244.0,
+        "ratio": 1.0466907824222935,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 23.2,
+        "ratio": 0.8979885057471264,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 84.2,
+        "ratio": 0.9278503562945368,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 313.5,
+        "ratio": 0.9968102073365231,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 6",
+        "n": 2000,
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1260.0,
+        "ratio": 1.033399470899471,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 120.8,
+        "ratio": 1.005794701986755,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 764.5,
+        "ratio": 1.0727599738391105,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5308.8,
+        "ratio": 1.112285262206148,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 500,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 37158.5,
+        "ratio": 1.191833631605151,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 127.2,
+        "ratio": 0.955188679245283,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 796.5,
+        "ratio": 1.0296610169491525,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5538.8,
+        "ratio": 1.0660973496064128,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 40107.5,
+        "ratio": 1.1042012092501403,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 123.8,
+        "ratio": 0.981421647819063,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 840.0,
+        "ratio": 0.9763392857142857,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5737.2,
+        "ratio": 1.0292302865509306,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep (pre-fix, 4 reps)",
+        "regime": "regular 10",
+        "n": 2000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 42282.0,
+        "ratio": 1.0474137931034482,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 4.566666666666666,
+        "measured_min": 3.5,
+        "measured_max": 6.0,
+        "ratio": 0.9854014598540146,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 9.866666666666667,
+        "measured_min": 8.0,
+        "measured_max": 12.8,
+        "ratio": 1.0261824324324325,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 23.266666666666666,
+        "measured_min": 21.0,
+        "measured_max": 25.8,
+        "ratio": 1.0444126074498568,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 4",
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.46666666666667,
+        "measured_min": 57.2,
+        "measured_max": 62.0,
+        "ratio": 1.0215807174887892,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 3,
+        "predicted": 20.833333333333332,
+        "measured": 22.900000000000002,
+        "measured_min": 20.5,
+        "measured_max": 25.0,
+        "ratio": 0.9097525473071323,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 4,
+        "predicted": 78.125,
+        "measured": 80.96666666666665,
+        "measured_min": 78.5,
+        "measured_max": 84.2,
+        "ratio": 0.9649032523672295,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 5,
+        "predicted": 312.5,
+        "measured": 299.1666666666667,
+        "measured_min": 291.8,
+        "measured_max": 313.5,
+        "ratio": 1.0445682451253482,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 6",
+        "kappa": 5.0,
+        "length": 6,
+        "predicted": 1302.0833333333333,
+        "measured": 1236.7333333333333,
+        "measured_min": 1206.2,
+        "measured_max": 1260.0,
+        "ratio": 1.0528408172066195,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 123.93333333333334,
+        "measured_min": 120.8,
+        "measured_max": 127.2,
+        "ratio": 0.9803657880580957,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 800.3333333333334,
+        "measured_min": 764.5,
+        "measured_max": 840.0,
+        "ratio": 1.0247292794668887,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5528.266666666666,
+        "measured_min": 5308.8,
+        "measured_max": 5737.2,
+        "ratio": 1.068128647918576,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 sweep pooled over n",
+        "regime": "regular 10",
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 39849.333333333336,
+        "measured_min": 37158.5,
+        "measured_max": 42282.0,
+        "ratio": 1.1113548532806905,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 3,
+        "predicted": 121.5,
+        "measured": 119.0,
+        "ratio": 1.0210084033613445,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 4,
+        "predicted": 820.125,
+        "measured": 802.8,
+        "ratio": 1.0215807174887892,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 5,
+        "predicted": 5904.9,
+        "measured": 5728.6,
+        "ratio": 1.030775407603952,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 10 post-fix",
+        "n": 1000,
+        "kappa": 9.0,
+        "length": 6,
+        "predicted": 44286.75,
+        "measured": 41762.3,
+        "ratio": 1.0604480596135748,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 3,
+        "predicted": 4.5,
+        "measured": 3.6,
+        "ratio": 1.25,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 4,
+        "predicted": 10.125,
+        "measured": 12.2,
+        "ratio": 0.8299180327868853,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 5,
+        "predicted": 24.3,
+        "measured": 25.4,
+        "ratio": 0.9566929133858268,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.2 post-fix",
+        "regime": "regular 4 post-fix",
+        "n": 1000,
+        "kappa": 3.0,
+        "length": 6,
+        "predicted": 60.75,
+        "measured": 59.0,
+        "ratio": 1.0296610169491525,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 3,
+        "predicted": 20.251641006693543,
+        "measured": 18.9,
+        "ratio": 1.0715153971795526,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 4,
+        "predicted": 75.3217386054988,
+        "measured": 72.9,
+        "ratio": 1.0332200083058818,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 5,
+        "predicted": 298.99865281777824,
+        "measured": 293.1,
+        "ratio": 1.02012505226127,
+        "within_tolerance": true
+      },
+      {
+        "source": "sec 6.3 C-model",
+        "regime": "C-model 2*Pois(2)",
+        "n": 1000,
+        "kappa": 4.949985396380993,
+        "length": 6,
+        "predicted": 1237.0987194168792,
+        "measured": 1119.9,
+        "ratio": 1.1046510576095,
+        "within_tolerance": true
+      }
+    ]
+  },
+  "i1d_fresh_spotcheck": [
+    {
+      "regime": "regular 4",
+      "n": 1000,
+      "reps": 16,
+      "kappa": 3.0,
+      "measured": {
+        "3": 4.4375,
+        "4": 9.5,
+        "5": 25.0,
+        "6": 58.5625
+      },
+      "predicted": {
+        "3": 4.5,
+        "4": 10.125,
+        "5": 24.3,
+        "6": 60.75
+      },
+      "ratio": {
+        "3": 1.0140845070422535,
+        "4": 1.0657894736842106,
+        "5": 0.972,
+        "6": 1.0373532550693703
+      },
+      "per_seed": {
+        "3": [
+          5,
+          9,
+          4,
+          2,
+          6,
+          1,
+          6,
+          4,
+          3,
+          4,
+          4,
+          5,
+          4,
+          5,
+          5,
+          4
+        ],
+        "4": [
+          7,
+          6,
+          10,
+          8,
+          9,
+          8,
+          9,
+          10,
+          9,
+          10,
+          5,
+          13,
+          8,
+          16,
+          12,
+          12
+        ],
+        "5": [
+          33,
+          19,
+          25,
+          19,
+          32,
+          24,
+          30,
+          23,
+          20,
+          20,
+          23,
+          27,
+          32,
+          26,
+          23,
+          24
+        ],
+        "6": [
+          53,
+          64,
+          67,
+          73,
+          55,
+          51,
+          55,
+          50,
+          58,
+          70,
+          62,
+          55,
+          65,
+          58,
+          58,
+          43
+        ]
+      },
+      "clique_floor": {
+        "K4": 0.0,
+        "K5": 0.0
+      },
+      "clique_per_seed": {
+        "K4": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "K5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "skipped": {}
+    },
+    {
+      "regime": "regular 6",
+      "n": 1000,
+      "reps": 12,
+      "kappa": 5.0,
+      "measured": {
+        "3": 18.25,
+        "4": 80.16666666666667,
+        "5": 309.6666666666667,
+        "6": 1251.5833333333333
+      },
+      "predicted": {
+        "3": 20.833333333333332,
+        "4": 78.125,
+        "5": 312.5,
+        "6": 1302.0833333333333
+      },
+      "ratio": {
+        "3": 1.141552511415525,
+        "4": 0.9745322245322244,
+        "5": 1.0091496232508073,
+        "6": 1.0403488914042214
+      },
+      "per_seed": {
+        "3": [
+          16,
+          21,
+          20,
+          22,
+          14,
+          11,
+          15,
+          18,
+          22,
+          21,
+          16,
+          23
+        ],
+        "4": [
+          69,
+          69,
+          84,
+          96,
+          75,
+          80,
+          74,
+          71,
+          76,
+          83,
+          99,
+          86
+        ],
+        "5": [
+          317,
+          288,
+          307,
+          306,
+          299,
+          319,
+          296,
+          312,
+          330,
+          294,
+          329,
+          319
+        ],
+        "6": [
+          1258,
+          1282,
+          1266,
+          1272,
+          1260,
+          1282,
+          1312,
+          1288,
+          1188,
+          1188,
+          1227,
+          1196
+        ]
+      },
+      "clique_floor": {
+        "K4": 0.0,
+        "K5": 0.0
+      },
+      "clique_per_seed": {
+        "K4": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "K5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "skipped": {}
+    },
+    {
+      "regime": "regular 10",
+      "n": 1000,
+      "reps": 6,
+      "kappa": 9.0,
+      "measured": {
+        "3": 122.83333333333333,
+        "4": 820.3333333333334,
+        "5": 5704.5,
+        "6": 41687.833333333336
+      },
+      "predicted": {
+        "3": 121.5,
+        "4": 820.125,
+        "5": 5904.9,
+        "6": 44286.75
+      },
+      "ratio": {
+        "3": 0.989145183175034,
+        "4": 0.9997460381958553,
+        "5": 1.0351301603996843,
+        "6": 1.062342330096311
+      },
+      "per_seed": {
+        "3": [
+          116,
+          120,
+          120,
+          123,
+          132,
+          126
+        ],
+        "4": [
+          828,
+          852,
+          807,
+          836,
+          813,
+          786
+        ],
+        "5": [
+          5761,
+          5640,
+          5839,
+          5657,
+          5649,
+          5681
+        ],
+        "6": [
+          41735,
+          41808,
+          41878,
+          41721,
+          41173,
+          41812
+        ]
+      },
+      "clique_floor": {
+        "K4": 0.0,
+        "K5": 0.0
+      },
+      "clique_per_seed": {
+        "K4": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "K5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "skipped": {}
+    },
+    {
+      "regime": "C-model 2*Pois(2)",
+      "n": 1000,
+      "reps": 11,
+      "kappa": 4.958415841584158,
+      "measured": {
+        "3": 20.818181818181817,
+        "4": 74.0,
+        "5": 287.6363636363636,
+        "6": 1121.3636363636363
+      },
+      "predicted": {
+        "3": 20.31784247386605,
+        "4": 75.55823399192167,
+        "5": 299.71931551013364,
+        "6": 1238.444168378506
+      },
+      "ratio": {
+        "3": 0.9759662323691117,
+        "4": 1.0210572161070495,
+        "5": 1.0420077340744216,
+        "6": 1.1044090678689555
+      },
+      "per_seed": {
+        "3": [
+          24,
+          19,
+          20,
+          14,
+          16,
+          10,
+          21,
+          21,
+          29,
+          28,
+          27
+        ],
+        "4": [
+          75,
+          82,
+          53,
+          75,
+          71,
+          71,
+          95,
+          56,
+          93,
+          57,
+          86
+        ],
+        "5": [
+          294,
+          311,
+          218,
+          282,
+          224,
+          290,
+          353,
+          233,
+          304,
+          280,
+          375
+        ],
+        "6": [
+          1124,
+          1271,
+          949,
+          1090,
+          761,
+          1180,
+          1437,
+          931,
+          1162,
+          1006,
+          1424
+        ]
+      },
+      "clique_floor": {
+        "K4": 0.0,
+        "K5": 0.0
+      },
+      "clique_per_seed": {
+        "K4": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "K5": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "skipped": {}
+    }
+  ],
+  "i2_heavy_tails": {
+    "generation": {
+      "family": "P(k) ~ k^-gamma, k >= k_min, Clauset discretisation",
+      "k_min_per_gamma": {
+        "2.5": 2,
+        "3.5": 3
+      },
+      "cutoff": "structural, k <= sqrt(n)",
+      "even_sum_repair": "decrement the largest degree if the sum is odd",
+      "replicates": 5,
+      "degree_seed_base": 40000,
+      "build_seed_base": 3100
+    },
+    "kappa": [
+      {
+        "gamma": 2.5,
+        "n": 1000,
+        "k_min": 2,
+        "mean_degree": 3.8952000000000004,
+        "max_degree": 31.0,
+        "kappa": 7.838439636425332,
+        "kappa_std": 0.38329879511036585,
+        "kappa_per_seed": [
+          8.076610857432776,
+          7.501595744680851,
+          8.147565922920892,
+          7.260615711252655,
+          8.205809945839487
+        ],
+        "kappa_uncapped": 39.20877119007029,
+        "kappa_uncapped_std": 28.66537248579237,
+        "kappa_uncapped_per_seed": [
+          95.11208267090619,
+          31.193176579068695,
+          13.506443914081144,
+          25.627851711026615,
+          30.604301075268815
+        ]
+      },
+      {
+        "gamma": 2.5,
+        "n": 4000,
+        "k_min": 2,
+        "mean_degree": 4.1367,
+        "max_degree": 63.0,
+        "kappa": 11.7658866673525,
+        "kappa_std": 1.1842760894498212,
+        "kappa_per_seed": [
+          10.204451150509243,
+          11.560572415494695,
+          11.605473480261566,
+          11.578467809615153,
+          13.880468480881847
+        ],
+        "kappa_uncapped": 28.930570895822814,
+        "kappa_uncapped_std": 5.837953466065233,
+        "kappa_uncapped_per_seed": [
+          37.26460885956645,
+          32.12625737079431,
+          24.08278641335636,
+          20.85068082160166,
+          30.32852101379531
+        ]
+      },
+      {
+        "gamma": 3.5,
+        "n": 1000,
+        "k_min": 3,
+        "mean_degree": 4.227600000000001,
+        "max_degree": 30.8,
+        "kappa": 4.944191178733478,
+        "kappa_std": 0.5481220180538575,
+        "kappa_per_seed": [
+          4.625840537944285,
+          4.933957845433256,
+          4.6908653846153845,
+          5.99910071942446,
+          4.47119140625
+        ],
+        "kappa_uncapped": 5.463873276317908,
+        "kappa_uncapped_std": 1.0165644306149442,
+        "kappa_uncapped_per_seed": [
+          4.625840537944285,
+          6.4474654377880185,
+          4.849880095923261,
+          6.9249889036839765,
+          4.47119140625
+        ]
+      },
+      {
+        "gamma": 3.5,
+        "n": 4000,
+        "k_min": 3,
+        "mean_degree": 4.2472,
+        "max_degree": 60.6,
+        "kappa": 5.303268237832837,
+        "kappa_std": 0.3195642800434613,
+        "kappa_per_seed": [
+          5.149905793688176,
+          5.554436900023414,
+          5.084284355682358,
+          5.793219944082013,
+          4.934494195688225
+        ],
+        "kappa_uncapped": 5.814452913234089,
+        "kappa_uncapped_std": 0.6855224433690279,
+        "kappa_uncapped_per_seed": [
+          5.568123091378905,
+          5.707670720299345,
+          7.040523029803275,
+          5.821453529000698,
+          4.934494195688225
+        ]
+      }
+    ],
+    "floors": [
+      {
+        "gamma": 2.5,
+        "n": 1000,
+        "k_min": 2,
+        "kappa": 7.838439636425332,
+        "reps": 5,
+        "measured": {
+          "3": 73.8,
+          "4": 356.8,
+          "5": 1626.4,
+          "6": 7790.8
+        },
+        "predicted": {
+          "3": 80.83829257801295,
+          "4": 478.5420535304594,
+          "5": 3028.1955586961244,
+          "6": 20001.794768579122
+        },
+        "ratio_pred_meas": {
+          "3": 1.095369818130257,
+          "4": 1.341205306979987,
+          "5": 1.8619008599951576,
+          "6": 2.5673608318246037
+        },
+        "per_seed": {
+          "3": [
+            83,
+            65,
+            75,
+            70,
+            76
+          ],
+          "4": [
+            366,
+            314,
+            421,
+            273,
+            410
+          ],
+          "5": [
+            1948,
+            1349,
+            1876,
+            956,
+            2003
+          ],
+          "6": [
+            9219,
+            5882,
+            9515,
+            4438,
+            9900
+          ]
+        },
+        "clique_floor": {
+          "K4": 0.8,
+          "K5": 0.0
+        },
+        "clique_per_seed": {
+          "K4": [
+            1,
+            1,
+            1,
+            1,
+            0
+          ],
+          "K5": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "skipped": {},
+        "count_seconds": 4.344821214675903
+      },
+      {
+        "gamma": 2.5,
+        "n": 4000,
+        "k_min": 2,
+        "kappa": 11.7658866673525,
+        "reps": 5,
+        "measured": {
+          "3": 273.0,
+          "4": 1952.2,
+          "5": 14598.6,
+          "6": 106975.0
+        },
+        "predicted": {
+          "3": 279.90907472178685,
+          "4": 2548.458878544409,
+          "5": 25020.267820876797,
+          "6": 258681.46255963092
+        },
+        "ratio_pred_meas": {
+          "3": 1.0253079660138713,
+          "4": 1.3054291970824756,
+          "5": 1.7138813188166535,
+          "6": 2.418148750265304
+        },
+        "per_seed": {
+          "3": [
+            182,
+            252,
+            265,
+            250,
+            416
+          ],
+          "4": [
+            980,
+            1794,
+            1893,
+            1819,
+            3275
+          ],
+          "5": [
+            6716,
+            13092,
+            13531,
+            12431,
+            27223
+          ],
+          "6": [
+            43996,
+            91096,
+            96414,
+            90251,
+            213118
+          ]
+        },
+        "clique_floor": {
+          "K4": 4.6,
+          "K5": 0.0
+        },
+        "clique_per_seed": {
+          "K4": [
+            1,
+            4,
+            5,
+            0,
+            13
+          ],
+          "K5": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "skipped": {},
+        "count_seconds": 85.80343413352966
+      },
+      {
+        "gamma": 3.5,
+        "n": 1000,
+        "k_min": 3,
+        "kappa": 4.944191178733478,
+        "reps": 5,
+        "measured": {
+          "3": 19.8,
+          "4": 70.0,
+          "5": 289.8,
+          "6": 1108.0
+        },
+        "predicted": {
+          "3": 20.920177945736135,
+          "4": 80.73974877574072,
+          "5": 337.41044016965793,
+          "6": 1491.3847537216086
+        },
+        "ratio_pred_meas": {
+          "3": 1.0565746437240473,
+          "4": 1.1534249825105818,
+          "5": 1.1642872331596201,
+          "6": 1.3460151206873723
+        },
+        "per_seed": {
+          "3": [
+            25,
+            17,
+            8,
+            35,
+            14
+          ],
+          "4": [
+            63,
+            73,
+            42,
+            128,
+            44
+          ],
+          "5": [
+            192,
+            302,
+            207,
+            607,
+            141
+          ],
+          "6": [
+            661,
+            1059,
+            736,
+            2558,
+            526
+          ]
+        },
+        "clique_floor": {
+          "K4": 0.0,
+          "K5": 0.0
+        },
+        "clique_per_seed": {
+          "K4": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "K5": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "skipped": {},
+        "count_seconds": 1.1813437938690186
+      },
+      {
+        "gamma": 3.5,
+        "n": 4000,
+        "k_min": 3,
+        "kappa": 5.303268237832837,
+        "reps": 5,
+        "measured": {
+          "3": 26.0,
+          "4": 101.4,
+          "5": 420.6,
+          "6": 1792.8
+        },
+        "predicted": {
+          "3": 25.13185911132912,
+          "4": 101.06738803808248,
+          "5": 435.151816136184,
+          "6": 1958.881979480238
+        },
+        "ratio_pred_meas": {
+          "3": 0.9666099658203507,
+          "4": 0.9967198031369081,
+          "5": 1.0345977559110413,
+          "6": 1.0926383196565361
+        },
+        "per_seed": {
+          "3": [
+            28,
+            30,
+            19,
+            28,
+            25
+          ],
+          "4": [
+            96,
+            102,
+            87,
+            149,
+            73
+          ],
+          "5": [
+            345,
+            567,
+            339,
+            600,
+            252
+          ],
+          "6": [
+            1435,
+            2426,
+            1344,
+            2777,
+            982
+          ]
+        },
+        "clique_floor": {
+          "K4": 0.0,
+          "K5": 0.0
+        },
+        "clique_per_seed": {
+          "K4": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "K5": [
+            0,
+            0,
+            0,
+            0,
+            0
+          ]
+        },
+        "skipped": {},
+        "count_seconds": 5.508422374725342
+      }
+    ]
+  },
+  "i3_regime_verdict": {
+    "signal_rate": 0.8,
+    "p3_bar": 5.0,
+    "n": 1000,
+    "rows": [
+      {
+        "regime": "low regular (k=4)",
+        "kappa": 3.0,
+        "families": {
+          "C3": {
+            "signal": 266.6666666666667,
+            "floor": 4.4375,
+            "signal_over_floor": 60.09389671361503,
+            "controllable": true
+          },
+          "C4": {
+            "signal": 200.0,
+            "floor": 9.5,
+            "signal_over_floor": 21.05263157894737,
+            "controllable": true
+          },
+          "C5": {
+            "signal": 160.0,
+            "floor": 25.0,
+            "signal_over_floor": 6.4,
+            "controllable": true
+          },
+          "C6": {
+            "signal": 133.33333333333334,
+            "floor": 58.5625,
+            "signal_over_floor": 2.2767698327997157,
+            "controllable": false
+          },
+          "K4": {
+            "signal": 200.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          },
+          "K5": {
+            "signal": 160.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          }
+        },
+        "controllable": [
+          "C3",
+          "C4",
+          "C5",
+          "K4",
+          "K5"
+        ],
+        "not_controllable": [
+          "C6"
+        ]
+      },
+      {
+        "regime": "moderate heterog. 2*Pois(2)",
+        "kappa": 4.958415841584158,
+        "families": {
+          "C3": {
+            "signal": 266.6666666666667,
+            "floor": 20.818181818181817,
+            "signal_over_floor": 12.809315866084427,
+            "controllable": true
+          },
+          "C4": {
+            "signal": 200.0,
+            "floor": 74.0,
+            "signal_over_floor": 2.7027027027027026,
+            "controllable": false
+          },
+          "C5": {
+            "signal": 160.0,
+            "floor": 287.6363636363636,
+            "signal_over_floor": 0.5562579013906448,
+            "controllable": false
+          },
+          "C6": {
+            "signal": 133.33333333333334,
+            "floor": 1121.3636363636363,
+            "signal_over_floor": 0.11890285096608569,
+            "controllable": false
+          },
+          "K4": {
+            "signal": 200.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          },
+          "K5": {
+            "signal": 160.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          }
+        },
+        "controllable": [
+          "C3",
+          "K4",
+          "K5"
+        ],
+        "not_controllable": [
+          "C4",
+          "C5",
+          "C6"
+        ]
+      },
+      {
+        "regime": "heavy tail gamma=3.5",
+        "kappa": 4.944191178733478,
+        "families": {
+          "C3": {
+            "signal": 266.6666666666667,
+            "floor": 19.8,
+            "signal_over_floor": 13.468013468013469,
+            "controllable": true
+          },
+          "C4": {
+            "signal": 200.0,
+            "floor": 70.0,
+            "signal_over_floor": 2.857142857142857,
+            "controllable": false
+          },
+          "C5": {
+            "signal": 160.0,
+            "floor": 289.8,
+            "signal_over_floor": 0.5521048999309869,
+            "controllable": false
+          },
+          "C6": {
+            "signal": 133.33333333333334,
+            "floor": 1108.0,
+            "signal_over_floor": 0.12033694344163659,
+            "controllable": false
+          },
+          "K4": {
+            "signal": 200.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          },
+          "K5": {
+            "signal": 160.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          }
+        },
+        "controllable": [
+          "C3",
+          "K4",
+          "K5"
+        ],
+        "not_controllable": [
+          "C4",
+          "C5",
+          "C6"
+        ]
+      },
+      {
+        "regime": "heavy tail gamma=2.5",
+        "kappa": 7.838439636425332,
+        "families": {
+          "C3": {
+            "signal": 266.6666666666667,
+            "floor": 73.8,
+            "signal_over_floor": 3.613369467028004,
+            "controllable": false
+          },
+          "C4": {
+            "signal": 200.0,
+            "floor": 356.8,
+            "signal_over_floor": 0.5605381165919282,
+            "controllable": false
+          },
+          "C5": {
+            "signal": 160.0,
+            "floor": 1626.4,
+            "signal_over_floor": 0.0983767830791933,
+            "controllable": false
+          },
+          "C6": {
+            "signal": 133.33333333333334,
+            "floor": 7790.8,
+            "signal_over_floor": 0.017114203077133714,
+            "controllable": false
+          },
+          "K4": {
+            "signal": 200.0,
+            "floor": 0.8,
+            "signal_over_floor": 250.0,
+            "controllable": true
+          },
+          "K5": {
+            "signal": 160.0,
+            "floor": 0.0,
+            "signal_over_floor": null,
+            "controllable": true
+          }
+        },
+        "controllable": [
+          "K4",
+          "K5"
+        ],
+        "not_controllable": [
+          "C3",
+          "C4",
+          "C5",
+          "C6"
+        ]
+      }
+    ],
+    "clique_feasibility": [
+      {
+        "regime": "low regular (k=4)",
+        "frac_k_ge_3": 1.0,
+        "frac_k_ge_4": 1.0
+      },
+      {
+        "regime": "moderate heterog. 2*Pois(2)",
+        "frac_k_ge_3": 0.619,
+        "frac_k_ge_4": 0.619
+      },
+      {
+        "regime": "heavy tail gamma=3.5",
+        "frac_k_ge_3": 1.0,
+        "frac_k_ge_4": 0.444
+      },
+      {
+        "regime": "heavy tail gamma=2.5",
+        "frac_k_ge_3": 0.477,
+        "frac_k_ge_4": 0.276
+      }
+    ]
+  },
+  "runtime_seconds": 144.61843585968018
+}

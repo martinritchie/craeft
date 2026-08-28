@@ -1,0 +1,456 @@
+{
+  "degree_preservation": [
+    {
+      "subgraph": "none",
+      "n": 1000,
+      "target_degree": 10,
+      "rate": 0.0,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "triangle",
+      "n": 1000,
+      "target_degree": 10,
+      "rate": 0.8,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "square",
+      "n": 1000,
+      "target_degree": 10,
+      "rate": 0.8,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "pentagon",
+      "n": 1000,
+      "target_degree": 10,
+      "rate": 0.8,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "hexagon",
+      "n": 1000,
+      "target_degree": 10,
+      "rate": 0.8,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "diamond",
+      "n": 1000,
+      "target_degree": 12,
+      "rate": 0.5,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    },
+    {
+      "subgraph": "K4",
+      "n": 1000,
+      "target_degree": 12,
+      "rate": 0.5,
+      "frac_nodes_exact": 1.0,
+      "mean_total_abs_deficit": 0.0,
+      "max_node_deficit": 0,
+      "mean_edges_lost": 0.0,
+      "degree_dist_identical_frac": 1.0,
+      "builds_ok": 12
+    }
+  ],
+  "subgraph_fidelity": [
+    {
+      "target": "triangle",
+      "rate": 0.8,
+      "by_construction": 266.6666666666667,
+      "random_floor": 119.0,
+      "expected": 385.6666666666667,
+      "realized": 384.0,
+      "ratio_realized_expected": 0.9956784788245462,
+      "signal_to_floor": 2.2408963585434174
+    },
+    {
+      "target": "square",
+      "rate": 0.8,
+      "by_construction": 200.0,
+      "random_floor": 802.75,
+      "expected": 1002.75,
+      "realized": 1020.8333333333334,
+      "ratio_realized_expected": 1.0180337405468296,
+      "signal_to_floor": 0.24914356898162565
+    },
+    {
+      "target": "pentagon",
+      "rate": 0.8,
+      "by_construction": 160.0,
+      "random_floor": 5728.583333333333,
+      "expected": 5888.583333333333,
+      "realized": 5881.5,
+      "ratio_realized_expected": 0.9987971073970819,
+      "signal_to_floor": 0.027930116520954864
+    },
+    {
+      "target": "hexagon",
+      "rate": 0.8,
+      "by_construction": 133.33333333333334,
+      "random_floor": 41762.333333333336,
+      "expected": 41895.66666666667,
+      "realized": 41951.083333333336,
+      "ratio_realized_expected": 1.0013227302744119,
+      "signal_to_floor": 0.003192669630528307
+    },
+    {
+      "target": "K4",
+      "rate": 0.5,
+      "by_construction": 125.0,
+      "random_floor": 0.08333333333333333,
+      "expected": 125.08333333333333,
+      "realized": 123.16666666666667,
+      "ratio_realized_expected": 0.9846768820786144,
+      "signal_to_floor": 1500.0
+    }
+  ],
+  "cmodels": [
+    {
+      "model": "Null (random)",
+      "mean_degree": 3.9708333333333337,
+      "var_degree": 7.861511,
+      "even_degrees_only": true,
+      "target_dist_tv_vs_null": "reference",
+      "clustering": 0.00577239798747899,
+      "triangles": 18.916666666666668
+    },
+    {
+      "model": "C1 triangle",
+      "mean_degree": 3.9708333333333337,
+      "var_degree": 7.861511,
+      "even_degrees_only": true,
+      "target_dist_tv_vs_null": "0.0000",
+      "clustering": 0.13146862169908227,
+      "triangles": 430.4166666666667
+    },
+    {
+      "model": "C2 square",
+      "mean_degree": 3.9708333333333337,
+      "var_degree": 7.861511,
+      "even_degrees_only": true,
+      "target_dist_tv_vs_null": "0.0000",
+      "clustering": 0.007051462898269199,
+      "triangles": 23.25
+    },
+    {
+      "model": "C3 pentagon",
+      "mean_degree": 3.9708333333333337,
+      "var_degree": 7.861511,
+      "even_degrees_only": true,
+      "target_dist_tv_vs_null": "0.0000",
+      "clustering": 0.00731493803285565,
+      "triangles": 23.916666666666668
+    },
+    {
+      "model": "C4 hexagon",
+      "mean_degree": 3.9708333333333337,
+      "var_degree": 7.861511,
+      "even_degrees_only": true,
+      "target_dist_tv_vs_null": "0.0000",
+      "clustering": 0.0073834806705785775,
+      "triangles": 24.166666666666668
+    }
+  ],
+  "orbit_clustering": [
+    {
+      "subgraph": "triangle",
+      "instances": 200,
+      "designed_triangles": 200.0,
+      "designed_triangles_oracle": 200,
+      "floor": 220.5,
+      "expected": 420.5,
+      "realized": 419.75,
+      "ratio": 0.9982164090368609,
+      "C_designed": 0.007575757575757576,
+      "C_realized": 0.015899621212121212
+    },
+    {
+      "subgraph": "diamond",
+      "instances": 150,
+      "designed_triangles": 300.0,
+      "designed_triangles_oracle": 300,
+      "floor": 220.5,
+      "expected": 520.5,
+      "realized": 525.5,
+      "ratio": 1.0096061479346783,
+      "C_designed": 0.011363636363636364,
+      "C_realized": 0.01990530303030303
+    },
+    {
+      "subgraph": "K4",
+      "instances": 150,
+      "designed_triangles": 600.0,
+      "designed_triangles_oracle": 600,
+      "floor": 220.5,
+      "expected": 820.5,
+      "realized": 817.5,
+      "ratio": 0.9963436928702011,
+      "C_designed": 0.022727272727272728,
+      "C_realized": 0.030965909090909093
+    },
+    {
+      "subgraph": "square",
+      "instances": 150,
+      "designed_triangles": 0.0,
+      "designed_triangles_oracle": 0,
+      "floor": 220.5,
+      "expected": 220.5,
+      "realized": 219.25,
+      "ratio": 0.9943310657596371,
+      "C_designed": 0.0,
+      "C_realized": 0.008304924242424242
+    }
+  ],
+  "orbit_exactness": {
+    "global_totals_exact": true,
+    "designed_total_constant": true,
+    "per_node_std": 0.4088521989863548,
+    "per_node_std_prescribed": 0.0
+  },
+  "assortativity": {
+    "cmodel": [
+      {
+        "model": "Null (random)",
+        "mean_assortativity": -0.011744801156404699,
+        "std_assortativity": 0.023545993731249965,
+        "min_assortativity": -0.06780318849527037,
+        "max_assortativity": 0.0256957346939986,
+        "clustering": 0.00577239798747899,
+        "degree_classes": 8,
+        "builds_ok": 12
+      },
+      {
+        "model": "C1 triangle",
+        "mean_assortativity": 0.08724799443748908,
+        "std_assortativity": 0.03193561963048687,
+        "min_assortativity": 0.020108229471778497,
+        "max_assortativity": 0.1342607907787564,
+        "clustering": 0.13146862169908227,
+        "degree_classes": 8,
+        "builds_ok": 12
+      },
+      {
+        "model": "C2 square",
+        "mean_assortativity": 0.10064734676558874,
+        "std_assortativity": 0.023647253898520747,
+        "min_assortativity": 0.06293648154306633,
+        "max_assortativity": 0.1392599191622801,
+        "clustering": 0.007051462898269199,
+        "degree_classes": 8,
+        "builds_ok": 12
+      },
+      {
+        "model": "C3 pentagon",
+        "mean_assortativity": 0.09017982778096385,
+        "std_assortativity": 0.026707296684120134,
+        "min_assortativity": 0.04123092701394946,
+        "max_assortativity": 0.1318891668049641,
+        "clustering": 0.00731493803285565,
+        "degree_classes": 8,
+        "builds_ok": 12
+      },
+      {
+        "model": "C4 hexagon",
+        "mean_assortativity": 0.09575299060991253,
+        "std_assortativity": 0.027443115513738778,
+        "min_assortativity": 0.047791085050739056,
+        "max_assortativity": 0.1493233619416782,
+        "clustering": 0.0073834806705785775,
+        "degree_classes": 8,
+        "builds_ok": 12
+      }
+    ],
+    "homogeneous": [
+      {
+        "family": "none",
+        "all_nan": true,
+        "degree_classes": 1
+      },
+      {
+        "family": "triangle",
+        "all_nan": true,
+        "degree_classes": 1
+      },
+      {
+        "family": "K4",
+        "all_nan": true,
+        "degree_classes": 1
+      }
+    ],
+    "matched_family_spread": 0.11239214792199344,
+    "null_assortativity": -0.011744801156404699
+  },
+  "order_four": [
+    {
+      "family": "Null (random)",
+      "counts": {
+        "path": 47463.5,
+        "star": 17590.0,
+        "cycle": 74.25,
+        "paw": 385.0,
+        "diamond": 1.5,
+        "complete": 0.0
+      },
+      "ratios": {
+        "phi_4_1": 0.0011511160924429263,
+        "phi_4_2": 0.0011281859882504664,
+        "phi_4_3": 2.293010419245984e-05,
+        "phi_4_4": 0.0,
+        "unclosed": 0.9988488839075571,
+        "paw": 0.005877510983996514
+      },
+      "connected_quadruples": 65514.25,
+      "paw_share": 0.0058765841019320225,
+      "star_share": 0.26849120611164745,
+      "builds_ok": 4
+    },
+    {
+      "family": "C2 square",
+      "counts": {
+        "path": 47638.75,
+        "star": 17520.0,
+        "cycle": 391.5,
+        "paw": 449.5,
+        "diamond": 4.25,
+        "complete": 0.0
+      },
+      "ratios": {
+        "phi_4_1": 0.0060030622223757645,
+        "phi_4_2": 0.005937883101989368,
+        "phi_4_3": 6.517912038639662e-05,
+        "phi_4_4": 0.0,
+        "unclosed": 0.9939969377776242,
+        "paw": 0.006819927231503634
+      },
+      "connected_quadruples": 66004.0,
+      "paw_share": 0.006810193321616872,
+      "star_share": 0.26543845827525603,
+      "builds_ok": 4
+    },
+    {
+      "family": "C3 pentagon",
+      "counts": {
+        "path": 48691.75,
+        "star": 17535.0,
+        "cycle": 91.75,
+        "paw": 437.5,
+        "diamond": 2.75,
+        "complete": 0.0
+      },
+      "ratios": {
+        "phi_4_1": 0.001412311587452524,
+        "phi_4_2": 0.0013704459460353842,
+        "phi_4_3": 4.1865641417139725e-05,
+        "phi_4_4": 0.0,
+        "unclosed": 0.9985876884125474,
+        "paw": 0.006585394566933052
+      },
+      "connected_quadruples": 66758.75,
+      "paw_share": 0.006553448049881102,
+      "star_share": 0.26266219783923456,
+      "builds_ok": 4
+    },
+    {
+      "family": "C4 hexagon",
+      "counts": {
+        "path": 48630.5,
+        "star": 17533.5,
+        "cycle": 89.75,
+        "paw": 441.5,
+        "diamond": 1.5,
+        "complete": 0.0
+      },
+      "ratios": {
+        "phi_4_1": 0.0013661700504812033,
+        "phi_4_2": 0.0013437756786342148,
+        "phi_4_3": 2.2394371846988255e-05,
+        "phi_4_4": 0.0,
+        "unclosed": 0.9986338299495188,
+        "paw": 0.0065918887325870975
+      },
+      "connected_quadruples": 66696.75,
+      "paw_share": 0.006619512944783666,
+      "star_share": 0.26288387365201454,
+      "builds_ok": 4
+    },
+    {
+      "family": "diamond",
+      "counts": {
+        "path": 37991.0,
+        "star": 13479.0,
+        "cycle": 46.0,
+        "paw": 4103.5,
+        "diamond": 194.25,
+        "complete": 1.75
+      },
+      "ratios": {
+        "phi_4_1": 0.0043451007615473766,
+        "phi_4_2": 0.0008250939948441204,
+        "phi_4_3": 0.0034881023400209757,
+        "phi_4_4": 3.190442668228095e-05,
+        "unclosed": 0.9956548992384526,
+        "paw": 0.07364715545729159
+      },
+      "connected_quadruples": 55815.5,
+      "paw_share": 0.0735190045775815,
+      "star_share": 0.24149205865754136,
+      "builds_ok": 4
+    },
+    {
+      "family": "K4",
+      "counts": {
+        "path": 29875.5,
+        "star": 9988.5,
+        "cycle": 30.0,
+        "paw": 7239.0,
+        "diamond": 14.25,
+        "complete": 180.5
+      },
+      "ratios": {
+        "phi_4_1": 0.004747365171969356,
+        "phi_4_2": 0.0006278289954613602,
+        "phi_4_3": 0.00030043360236100603,
+        "phi_4_4": 0.0038191025741469895,
+        "unclosed": 0.9952526348280306,
+        "paw": 0.15309214657429115
+      },
+      "connected_quadruples": 47327.75,
+      "paw_share": 0.15295466190554166,
+      "star_share": 0.2110495428157899,
+      "builds_ok": 4
+    }
+  ]
+}
