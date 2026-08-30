@@ -1,0 +1,93 @@
+{
+  "degree_sequence": [
+    3,
+    2,
+    2,
+    2,
+    1
+  ],
+  "num_simple_graphs": 6,
+  "dead_end_mass": {
+    "fraction": "197774/641355",
+    "value": 0.308369000007796
+  },
+  "metrics": {
+    "max_abs_relative_deviation": 0.029512084602361238,
+    "mean_abs_relative_deviation": 0.029512084602361238,
+    "total_variation_distance": 0.014756042301180619
+  },
+  "per_graph": {
+    "01,02,03,12,34": {
+      "exact_probability": {
+        "fraction": "76112/443581",
+        "value": 0.17158534743372686
+      },
+      "relative_deviation_vs_uniform": 0.029512084602361238,
+      "first_order_prediction": 0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.171405,
+      "mc_z_vs_exact": -0.213924723604809
+    },
+    "01,02,03,13,24": {
+      "exact_probability": {
+        "fraction": "76112/443581",
+        "value": 0.17158534743372686
+      },
+      "relative_deviation_vs_uniform": 0.029512084602361238,
+      "first_order_prediction": 0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.172725,
+      "mc_z_vs_exact": 1.3518343743927863
+    },
+    "01,02,03,14,23": {
+      "exact_probability": {
+        "fraction": "76112/443581",
+        "value": 0.17158534743372686
+      },
+      "relative_deviation_vs_uniform": 0.029512084602361238,
+      "first_order_prediction": 0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.17198,
+      "mc_z_vs_exact": 0.46812942893201936
+    },
+    "01,02,04,13,23": {
+      "exact_probability": {
+        "fraction": "215245/1330743",
+        "value": 0.16174798589960646
+      },
+      "relative_deviation_vs_uniform": -0.029512084602361238,
+      "first_order_prediction": -0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.16235,
+      "mc_z_vs_exact": 0.731164198042819
+    },
+    "01,03,04,12,23": {
+      "exact_probability": {
+        "fraction": "215245/1330743",
+        "value": 0.16174798589960646
+      },
+      "relative_deviation_vs_uniform": -0.029512084602361238,
+      "first_order_prediction": -0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.160435,
+      "mc_z_vs_exact": -1.5946607923298257
+    },
+    "02,03,04,12,13": {
+      "exact_probability": {
+        "fraction": "215245/1330743",
+        "value": 0.16174798589960646
+      },
+      "relative_deviation_vs_uniform": -0.029512084602361238,
+      "first_order_prediction": -0.018571428571428572,
+      "ordering_sum_theorem_verified": true,
+      "mc_frequency": 0.161105,
+      "mc_z_vs_exact": -0.7809256782046659
+    }
+  },
+  "monte_carlo": {
+    "samples": 200000,
+    "seed": 20260830,
+    "dead_end_restarts": 88837,
+    "max_abs_z_vs_exact": 1.5946607923298257
+  }
+}
