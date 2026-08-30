@@ -1,17 +1,33 @@
-"""Section I of the control audit: closed-form floor prediction and heavy tails.
+"""Floor-prediction audit: the closed-form by-product floor, validated.
 
-Ticket 011. Three experiments, run standalone so the section does not touch
-control_audit.py:
+Random pairing alone creates short cycles -- a "by-product floor" of
+triangles, squares and longer cycles that exists before any structure is
+designed in. craeft.graphs.metrics.predicted_cycle_floor gives that floor
+in closed form from the degree sequence, with no graph generated. This
+audit validates the formula against an independently measured record and
+probes the regimes where floors overwhelm design. Results feed
+docs/claims/claim-2-designed-counts.md.
+
+Three experiments, labelled to match the keys of the results JSON
+(i1_predictor_validation, i2_heavy_tails, i3_regime_verdict):
 
   I1  validate `predicted_cycle_floor` against every measured floor in the
-      transcribed record below, plus a fresh re-measurement at n=1000 that
+      record transcribed below, plus a fresh re-measurement at n=1000 that
       also supplies clique floors off regular degree 10, which the original
-      sweep never measured.
+      sweep never measured. Disagreement beyond tolerance raises, so a
+      regression breaks the run rather than printing a worse number.
   I2  heavy-tail floors: power-law degree sequences, gamma in {2.5, 3.5},
       n in {1000, 4000}; cycle floors L=3..6 and clique floors K4/K5 on
       configuration-model nulls.
   I3  the regime-utility verdict: which motif families stay controllable per
       degree regime, recorded either way.
+
+The measured record is transcribed into module constants rather than
+recomputed, so the predictor is validated against numbers it could not have
+influenced. Labels like "sec 6.2" / "sec 6.3" on those constants and in the
+results JSON's source fields cite sections of the retired internal audit
+record the numbers were first recorded in; the transcription here is the
+canonical copy.
 
 Run:
   MPLCONFIGDIR=$TMPDIR .venv/bin/python docs/claims/evidence/audit_section_i.py
@@ -75,9 +91,9 @@ MEASURED_62_SWEEP = {
     ("regular 10", 2000): {3: 123.8, 4: 840.0, 5: 5737.2, 6: 42282.0},
 }
 
-# Source: sec 6.2, the post-ticket-001 re-measurements (12 replicates at
-# regular degree 10, 8 at regular degree 4). These are the current numbers the
-# doc's S/F columns are computed from.
+# Source: sec 6.2 of the record, the post-fix re-measurements (12 replicates at
+# regular degree 10, 8 at regular degree 4). These are the numbers the
+# record's S/F columns were computed from.
 MEASURED_62_POSTFIX = {
     ("regular 10", 1000): {3: 119.0, 4: 802.8, 5: 5728.6, 6: 41762.3},
     ("regular 4", 1000): {3: 3.6, 4: 12.2, 5: 25.4, 6: 59.0},
@@ -232,7 +248,7 @@ def exp_i1_predictor() -> dict:
 
     # --- post-fix re-measurements and the C-model ------------------------
     print(
-        "\n  I1c. post-ticket-001 re-measurements (sec 6.2) and the C-model (sec 6.3)"
+        "\n  I1c. post-fix re-measurements (sec 6.2) and the C-model (sec 6.3)"
     )
     print(
         f"\n  {'regime':<22}{'kappa':>7}{'L':>3}"
@@ -318,7 +334,7 @@ def exp_i1_predictor() -> dict:
             "\n  cells do not have the precision to test a 25% claim. I1d"
             "\n  re-measures that regime with more replicates."
         )
-    # The ticket asks for an ASSERTION, not a report: a regression in either
+    # This check is an ASSERTION, not a report: a regression in either
     # the formula or the generator must break the run, not print a worse number.
     if n_out:
         failures = "; ".join(
@@ -679,7 +695,7 @@ def exp_i2_heavy_tails() -> dict:
         parts.append(f"K5 {min(v5)}-{max(v5)}")
         print(f"    gamma={r['gamma']} n={r['n']:>5}: " + ", ".join(parts))
 
-    # Question (b) of the ticket, answered explicitly.
+    # The clique-floor question, answered explicitly.
     k4_by_cell = {(r["gamma"], r["n"]): r["clique_floor"]["K4"] for r in floor_rows}
     k5_all = [v for r in floor_rows for v in r["clique_per_seed"]["K5"]]
     print(

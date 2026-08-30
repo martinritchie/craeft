@@ -222,18 +222,17 @@ def exp_degrees() -> list[dict]:
     exact = all(r["frac_nodes_exact"] == 1.0 for r in rows)
     clean = all(r["mean_edges_lost"] == 0.0 for r in rows)
     print(
-        "\n  NOTE (ticket 001, fixed): Connector.connect_singles now uses the"
+        "\n  NOTE: Connector.connect_singles uses the"
         "\n  MATCHING ALGORITHM -- on a self-loop or multi-edge collision the"
         "\n  stubs are returned to the pool and redrawn, never discarded. The"
         "\n  2017 paper (sec 2) mandates exactly this: 'If this approach [of"
         "\n  deleting] is taken then the guiding degree sequence will be"
-        "\n  violated.' Before the fix this table read 93.6-96.1% exact with"
-        "\n  20-70 edges lost per build; degrees are now preserved element-wise."
+        "\n  violated.'"
         f"\n\n  100% of nodes exact on every family: {exact}"
         f"\n  zero edges lost on every family:      {clean}"
         "\n  => criteria P1 (per-node identical degree sequences) and P2 (equal"
         "\n     edge counts) hold. ConfigModelGraph.from_config additionally"
-        "\n     asserts this per build (ticket 002, verify_degrees=True), so a"
+        "\n     asserts this per build (verify_degrees=True), so a"
         "\n     regression raises DegreeMismatchError rather than degrading"
         "\n     silently -- these builds are self-verifying."
     )
@@ -400,7 +399,7 @@ def exp_cmodels() -> list[dict]:
 # ------------------------------------------------------ D. orbit clustering
 # Unique triangles contributed per subgraph instance (designed triangle budget).
 # Hand-computed here on purpose: this table is the INDEPENDENT ORACLE that
-# craeft.graphs.metrics.unique_triangles (ticket 004) is checked against below,
+# craeft.graphs.metrics.unique_triangles is checked against below,
 # so it must not be imported from the code under audit.
 UNIQUE_TRIANGLES = {
     "triangle": 1,
@@ -452,7 +451,7 @@ def exp_orbit_clustering(reps: int = 8) -> list[dict]:
             print(f"  {name:<10} FAILED")
             continue
         m = round(n * rate / sg.num_nodes)
-        # Ticket 004: designed clustering is closed-form from the config, with
+        # Designed clustering is closed-form from the config, with
         # no generation. Cross-checked against the hand-computed oracle above.
         designed = designed_triangles(cfg)
         c_des = designed_clustering(cfg)
@@ -482,10 +481,10 @@ def exp_orbit_clustering(reps: int = 8) -> list[dict]:
     print("\n  => designed + floor predicts realized to within ~2%, including the")
     print("     mixed-orbit diamond. Global clustering is set by the triangle budget.")
     print(
-        "\n  designed_triangles/designed_clustering (ticket 004) reproduce the"
+        "\n  designed_triangles/designed_clustering reproduce the"
         f"\n  hand-computed oracle column exactly: {oracle_ok}. Both are closed-form"
         "\n  from the config -- no generation needed -- so a matched-clustering pair"
-        "\n  can be designed and checked BEFORE building. Criterion P5."
+        "\n  can be designed and checked BEFORE building."
     )
     return rows
 
@@ -528,7 +527,7 @@ def exp_orbit_exactness(reps: int = 8) -> dict:
     print(f"  designed triangle TOTAL across re-splits: {set(totals)} (constant)")
     print(f"  per-node designed triangles, SAMPLED split:    std = {sampled_std:.3f}")
 
-    # Ticket 007: the same participation sequence, but with the orbit split
+    # Prescribed split: the same participation sequence, but with the orbit split
     # PRESCRIBED via split_deterministic and passed as orbit_counts. The split
     # is then returned verbatim, so re-running under different seeds must give
     # bit-identical per-node triangle counts.
@@ -550,7 +549,7 @@ def exp_orbit_exactness(reps: int = 8) -> dict:
 
     print("\n  => global C is exact under both. With the SAMPLED split, per-node")
     print("     c_i is exact only in expectation for asymmetric subgraphs. With")
-    print("     orbit_counts PRESCRIBED (ticket 007), per-node designed triangles")
+    print("     orbit_counts PRESCRIBED, per-node designed triangles")
     print("     are pinned across seeds, so the c(k) profile is controllable too.")
     print("     Vertex-transitive subgraphs (all cycles, all complete subgraphs)")
     print("     have a single orbit and are unaffected either way.")
@@ -658,7 +657,7 @@ def exp_assortativity(reps: int = REPS) -> dict:
             print(
                 f"  C1 triangle sits at r={c1['mean_assortativity']:+.4f} with"
                 f" C={c1['clustering']:.4f} -- it is already excluded from the"
-                "\n     recommended pair for being a clustering outlier (sec 6.3)."
+                "\n     recommended pair for being a clustering outlier."
             )
 
     print("\n  F2. Homogeneous families of section A (degree 10 -- r undefined)")
@@ -694,8 +693,8 @@ def exp_assortativity(reps: int = REPS) -> dict:
             }
         )
     print(
-        "\n  => degree_assortativity returns nan rather than dividing by ~0"
-        "\n     (ticket 005). Exact degree preservation (section A) means every"
+        "\n  => degree_assortativity returns nan rather than dividing by ~0."
+        "\n     Exact degree preservation (section A) means every"
         "\n     node really does have degree 10, so the zero variance is now a"
         "\n     property of the design rather than an artefact of edge loss."
     )
@@ -709,9 +708,7 @@ def exp_assortativity(reps: int = REPS) -> dict:
 
 # ------------------------------------------------------- G. order-four
 # The six connected 4-node isomorphism classes, and the 2014 sec 2.2 item 4
-# ratios, per family. Ticket 006 asked for this and never delivered it;
-# ticket 008 renamed the ratio keys first so the audit does not bake the wrong
-# labels into its output.
+# ratios, per family.
 #
 # NUMBERING (published 2014, p. 24 item 4 and Table 2 on p. 28):
 #   phi_4_1 = ALL closed quadruples (aggregate)   phi_4_2 = empty square
@@ -874,23 +871,21 @@ def exp_order_four(reps: int = 4) -> list[dict]:
     return rows
 
 
-# ------------------------------------------- H and I live in separate files
-# Sections H and I are NOT in this file. They were written as standalone
-# harnesses because each needed its own degree generators, degree binning and
+# --------------------------------- two companion audits, in separate files
+# Two companion audits are standalone scripts rather than sections of this
+# file: each needs its own degree generators, degree binning and
 # distributional statistics, and folding them in here would have doubled the
-# module without sharing anything but the imports.
+# module without sharing anything but the imports. Their H and I labels
+# persist in their filenames and in their results JSONs.
 #
-#   H -- per-node SNR criteria P3-local and P8, plus the placement experiment
-#        (ticket 010).  audit_section_h.py -> audit_section_h_results.json.
+#   H -- per-node SNR criteria P3-local and P8, plus the placement
+#        experiment.  audit_section_h.py -> audit_section_h_results.json.
 #        Results feed docs/claims/claim-4-residual-freedom.md.
 #
 #   I -- closed-form floor predictor validation, heavy-tail cycle and clique
-#        floors, and the regime-utility verdict (ticket 011).
+#        floors, and the regime-utility verdict.
 #        audit_section_i.py -> audit_section_i_results.json.
 #        Results feed docs/claims/claim-2-designed-counts.md.
-#
-# Note the re-lettering: ticket 010 originally reserved section G, which
-# ticket 008's order-four audit took; 010 became H and 011 became I.
 
 
 def main() -> None:

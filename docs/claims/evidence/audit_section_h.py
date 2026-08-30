@@ -1,30 +1,43 @@
-"""Section H of the control audit: LOCAL (per-node) signal and matching.
+"""Per-node (local) control audit: signal and matching where a model reads them.
 
-Ticket 010. The global control criteria (P3, P4, P5) are graph-wide totals;
-an L-layer message-passing network reads L-hop neighbourhoods, so the
-quantities it can actually see are per-node. This section measures the two
-local criteria (results feed docs/claims/claim-4-residual-freedom.md):
+The main control audit (control_audit.py) checks graph-wide totals: designed
+motif counts against the by-product floor, matched families agreeing in
+aggregate. But an L-layer message-passing network never sees totals -- it
+reads L-hop neighbourhoods -- so control that holds in aggregate can still
+fail node by node. This audit re-asks the control questions per node. The
+two criteria it measures, P3-local and P8, are stated on the claims index
+(docs/claims/index.md); results feed docs/claims/claim-4-residual-freedom.md.
 
-  H1  P3-local -- per-node target-motif incidence against the
-      DEGREE-CONDITIONAL floor, stratified by degree class. Reports the
-      fraction of all nodes, and separately of *participating* nodes, whose
-      designed incidence clears 5x their own degree class's floor.
+Three experiments, labelled to match the keys of the results JSON
+(h1_local_snr, h2_leak, h3_placement):
 
-  H2  P8 -- for each motif a matched pair holds fixed, the distributional
-      distance (TV on binned per-node incidence, KS as a bin-free check)
-      between the pair's per-node incidence profiles, read against the
-      within-family replicate scatter. A pair "leaks" when the between-family
-      distance is outside that scatter.
+  H1  local signal-to-floor (P3-local) -- each node's designed motif
+      incidence is compared against the floor for its own degree class,
+      not the global floor. Reports the fraction of all nodes, and
+      separately of *participating* nodes, whose designed incidence clears
+      5x their own class's floor.
 
-  H3  the placement experiment -- heterogeneous pentagon family, default
-      (capped, hub-correlated) placement vs prescribed placements that avoid
-      the hubs. Tests the ticket's hypothesis that local SNR at participating
-      nodes clears 5x even though global P3 fails for this family (it sits
-      at 0.8x the floor).
+  H2  per-node matching (P8) -- a matched pair of families can agree in
+      totals yet distribute a motif differently across nodes. For each
+      motif a pair holds fixed, the distance between the pair's per-node
+      incidence profiles (TV on binned incidence, KS as a bin-free check)
+      is read against the within-family replicate scatter. A pair "leaks"
+      when the between-family distance is outside that scatter.
 
-Lives in its own file rather than in control_audit.py so the two can be
-developed in parallel; it imports the harness for the family definitions,
-seeding conventions and build wrapper. Merge into control_audit.py later.
+  H3  the placement experiment -- a heterogeneous pentagon family that
+      fails the global signal criterion (it sits at 0.8x its floor). The
+      generator's default draw correlates participation with degree,
+      because the per-node cap scales with degree; it is compared against
+      prescribed placements that avoid the hubs, testing whether local
+      signal at participating nodes clears 5x anyway.
+
+Standalone rather than a section of control_audit.py because it needs its
+own degree generators, degree binning and distributional statistics; it
+imports that harness for family definitions, seeding conventions and the
+build wrapper. Labels like "sec 6.2" / "sec 6.3" in a few output rows cite
+sections of the retired internal audit record where these families were
+first measured; the families themselves are defined here and in
+control_audit.py.
 
 Run:
   MPLCONFIGDIR=$TMPDIR .venv/bin/python docs/claims/evidence/audit_section_h.py
@@ -145,7 +158,7 @@ def capped_participation(
 
     Reproduces exactly what ConfigModelGraph.from_config does on its first
     attempt -- max_per_node = degrees // max(orbit_degrees) -- so this arm is
-    the *default* placement, hub-correlated by ticket 003's cap.
+    the *default* placement, hub-correlated because the cap scales with degree.
     """
     seq = SubgraphSequence(subgraph=ca.SG[subgraph_key], distribution=poisson(LAM))
     cap = degrees // max(seq.orbit_degrees.values())
@@ -308,10 +321,8 @@ def _h1_family(
         # The by-product term ACTUALLY present in the built graph, as opposed
         # to the null family's floor. They are not the same number: imposing
         # structure consumes stubs, which moves the residual random graph, and
-        # in a heterogeneous family it moves it upward on the hubs (sec 6.3's
-        # additivity ratio drifting from 1.00 to 1.28 is the global shadow of
-        # this). SNR insitu is the ratio a message-passing model actually
-        # faces at that node.
+        # in a heterogeneous family it moves it upward on the hubs. SNR insitu
+        # is the ratio a message-passing model actually faces at that node.
         insitu = np.maximum(realized - designed, 0)
 
         clears = np.zeros(designed.size, dtype=bool)
@@ -532,7 +543,7 @@ def exp_h2_leak() -> dict:
         f"  C-model family {{Null, G_square, G_C5, G_C6}}, n={N},"
         f" degrees 2*Pois({LAM:.0f}),\n"
         f"  {REPS_H2} replicates, build seeds {H2_SEED_BASE}+rep --"
-        " the same builds as sec 6.3/6.4.\n"
+        " the same builds as control_audit.py's C-model families.\n"
         "  TV on shared bins (per-value where values are few, else 20"
         " quantile bins),\n"
         "  KS as a bin-free cross-check. Baseline: TV between two draws of"
@@ -683,9 +694,9 @@ def exp_h3_placement() -> dict:
     print("H3. PLACEMENT: can hub-avoidance rescue local SNR where global fails?")
     print("=" * 78)
     print(
-        f"  Heterogeneous pentagon family (sec 6.3): n={N},"
+        f"  Heterogeneous pentagon family: n={N},"
         f" degrees 2*Pois({LAM:.0f}), rate Pois({LAM:.0f}).\n"
-        "  Globally the pentagon sits BELOW its own floor (0.8x, sec 6.3)."
+        "  Globally the pentagon sits BELOW its own floor (0.8x)."
         " Hypothesis: local SNR\n  at participating nodes still clears 5x if"
         " placement avoids the hubs.\n"
         f"  {REPS_H3} replicates. Null seeds {H3_NULL_SEED_BASE}+rep, builds"
@@ -693,7 +704,7 @@ def exp_h3_placement() -> dict:
         f" {H3_PARTICIPATION_SEED_BASE}+rep, placement"
         f" {H3_PLACEMENT_SEED_BASE}+rep, degrees {ca.DEGREE_SEED_BASE}+rep.\n"
         "  Three arms:\n"
-        "    capped      -- the generator's default draw (ticket 003's cap,"
+        "    capped      -- the generator's default draw (cap scales with degree,"
         " hub-correlated)\n"
         "    neutral     -- degree-neutral water-fill, prescribed via"
         " split_deterministic\n"
