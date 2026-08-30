@@ -19,18 +19,19 @@ Three pillars, each checking the next:
      restart-afresh path in from_config) is renormalised out exactly as
      production does.
 
-  2. Ordering-sum theorem. For any target graph g,
+  2. Closed form for P(g). The claim doc derives, edge by edge, the
+     exact expression
 
          P_raw(g) = (prod_u d_u!) * sum_{orderings pi of E(g)}
-                        prod_t 1 / W_t(pi),
+                        prod_t 1 / W_t(pi):
 
-     because node u's residual count takes each value d_u, ..., 1 exactly
-     once across its edges, so the numerator telescopes to prod d_u! for
+     node u's residual count takes each value d_u, ..., 1 exactly once
+     across its edges, so the numerator telescopes to prod d_u! for
      every ordering. Corollary: were W_t graph-independent (restart-from-
      scratch rejection), P(g) would be constant — the classical uniformity
      of rejection sampling. All bias therefore lives in W_t's two
-     collision-exclusion terms. The script verifies the identity exactly
-     for every graph. A first-order expansion of 1/W_t around the
+     collision-exclusion terms. The script evaluates the closed form for
+     every graph and checks it against the dynamic programme of pillar 1. A first-order expansion of 1/W_t around the
      mean-field value A_t = T_t (T_t - 1) / 2 predicts the deviation as
      B(g) - mean(B), with B(g) the ordering-averaged sum of excluded
      collision weight over A_t; the prediction is reported next to the
@@ -139,9 +140,9 @@ def enumerate_reference() -> list[Graph]:
     return graphs
 
 
-# ------------------------------------------- 2. theorem and first order
+# ---------------------------------------- 2. closed form and first order
 def ordering_sum(g: Graph) -> Fraction:
-    """P_raw(g) via the ordering-sum theorem: prod d_u! * sum_pi prod 1/W."""
+    """P_raw(g) via the derived closed form: prod d_u! * sum_pi prod 1/W."""
     stub_factor = 1
     for d in DEGREES:
         stub_factor *= factorial(d)
@@ -207,8 +208,8 @@ def main() -> None:
     deviations = {g: exact[g] / uniform - 1 for g in graphs}
     tvd = sum(abs(exact[g] - uniform) for g in graphs) / 2
 
-    theorem_ok = {g: ordering_sum(g) == raw[g] for g in graphs}
-    assert all(theorem_ok.values()), "ordering-sum theorem check failed"
+    closed_form_ok = {g: ordering_sum(g) == raw[g] for g in graphs}
+    assert all(closed_form_ok.values()), "closed-form check vs DP failed"
 
     b_values = {g: first_order_B(g) for g in graphs}
     b_mean = sum(b_values.values()) / len(graphs)
@@ -243,7 +244,7 @@ def main() -> None:
                 },
                 "relative_deviation_vs_uniform": float(deviations[g]),
                 "first_order_prediction": float(b_values[g] - b_mean),
-                "ordering_sum_theorem_verified": theorem_ok[g],
+                "closed_form_verified": closed_form_ok[g],
                 "mc_frequency": mc[g]["frequency"],
                 "mc_z_vs_exact": mc[g]["z_vs_exact"],
             }
@@ -266,7 +267,7 @@ def main() -> None:
         f"{out['metrics']['max_abs_relative_deviation']:.4%}; "
         f"TVD {out['metrics']['total_variation_distance']:.4f}"
     )
-    print(f"ordering-sum theorem verified on all {len(graphs)} graphs")
+    print(f"closed form verified against the DP on all {len(graphs)} graphs")
     print(f"MC max |z| vs exact: {max_abs_z:.2f} ({MC_SAMPLES} samples)")
     print(f"wrote {dest}")
 

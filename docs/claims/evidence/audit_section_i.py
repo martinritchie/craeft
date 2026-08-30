@@ -1,12 +1,12 @@
 """Section I of the control audit: closed-form floor prediction and heavy tails.
 
-Ticket 011. Three experiments, run standalone so the section can land without
-touching dev/control_audit.py (parallel agent):
+Ticket 011. Three experiments, run standalone so the section does not touch
+control_audit.py:
 
-  I1  validate `predicted_cycle_floor` against every floor recorded in
-      algorithmic-claim.md sec 6.2 and sec 6.3, plus a fresh re-measurement at
-      n=1000 that also supplies the clique floors sec 6.2 never measured off
-      regular degree 10.
+  I1  validate `predicted_cycle_floor` against every measured floor in the
+      transcribed record below, plus a fresh re-measurement at n=1000 that
+      also supplies clique floors off regular degree 10, which the original
+      sweep never measured.
   I2  heavy-tail floors: power-law degree sequences, gamma in {2.5, 3.5},
       n in {1000, 4000}; cycle floors L=3..6 and clique floors K4/K5 on
       configuration-model nulls.
@@ -14,7 +14,8 @@ touching dev/control_audit.py (parallel agent):
       degree regime, recorded either way.
 
 Run:
-  MPLCONFIGDIR=$TMPDIR .venv/bin/python dev/audit_section_i.py
+  MPLCONFIGDIR=$TMPDIR .venv/bin/python docs/claims/evidence/audit_section_i.py
+    -> docs/claims/evidence/audit_section_i_results.json
 """
 
 from __future__ import annotations
@@ -56,11 +57,12 @@ CELL_BUDGET_S = 120.0
 
 
 # ------------------------------------------------- recorded measured floors
-# Transcribed from dev/algorithmic-claim.md. DO NOT edit these to fit: they are
-# the record the predictor is being validated against.
+# Transcribed from the original audit record, which predates the claim pages.
+# DO NOT edit these to fit: they are the record the predictor is being
+# validated against.
 #
-# Source: sec 6.2 "The by-product floor", the n x <k> sweep table (pre-fix,
-# 4 replicates per cell). Keys are (regime, n) -> {L: measured induced count}.
+# Source: the by-product-floor n x <k> sweep table (pre-fix, 4 replicates per
+# cell). Keys are (regime, n) -> {L: measured induced count}.
 MEASURED_62_SWEEP = {
     ("regular 4", 500): {3: 4.2, 4: 8.0, 5: 21.0, 6: 62.0},
     ("regular 4", 1000): {3: 6.0, 4: 12.8, 5: 25.8, 6: 59.2},
@@ -152,7 +154,7 @@ def exp_i1_predictor() -> dict:
         "  Predictor: E[#C_L] = kappa**L / (2L), kappa = <k(k-1)>/<k>"
         "\n  (craeft.graphs.metrics.predicted_cycle_floor -- degree sequence only,"
         "\n  no graph generated). Measured values transcribed from"
-        "\n  algorithmic-claim.md sec 6.2 / sec 6.3; see the module constants."
+        "\n  the original audit record, sec 6.2 / sec 6.3; see the module constants."
     )
 
     rows: list[dict] = []

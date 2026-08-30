@@ -1,12 +1,12 @@
 """Empirical control audit for craeft config-model graphs.
 
-Produces the evidence table for dev/algorithmic-claim.md: how controlled is
-the structure, really? Measures degree preservation, subgraph-count fidelity
-against the random-graph floor, and the C-model invariant.
+Produces the evidence behind the claim pages (docs/claims/): how controlled
+is the structure, really? Measures degree preservation, subgraph-count
+fidelity against the random-graph floor, and the C-model invariant.
 
 Run:
-  PYTHONPATH=".venv/lib/python3.13/site-packages:src" \
-    .venv/bin/python dev/control_audit.py
+  .venv/bin/python docs/claims/evidence/control_audit.py
+    -> docs/claims/evidence/control_audit_results.json
 """
 
 from __future__ import annotations
@@ -709,8 +709,7 @@ def exp_assortativity(reps: int = REPS) -> dict:
 
 # ------------------------------------------------------- G. order-four
 # The six connected 4-node isomorphism classes, and the 2014 sec 2.2 item 4
-# ratios, per family. Ticket 006 asked for this and never delivered it (dev/
-# is gitignored, so the worktree it was implemented in had no dev/ directory);
+# ratios, per family. Ticket 006 asked for this and never delivered it;
 # ticket 008 renamed the ratio keys first so the audit does not bake the wrong
 # labels into its output.
 #
@@ -882,15 +881,13 @@ def exp_order_four(reps: int = 4) -> list[dict]:
 # module without sharing anything but the imports.
 #
 #   H -- per-node SNR criteria P3-local and P8, plus the placement experiment
-#        (ticket 010).  dev/audit_section_h.py
-#        -> dev/audit_section_h_results.json, dev/audit_section_h_report.md
-#        Results recorded in dev/algorithmic-claim.md section 6.7.
+#        (ticket 010).  audit_section_h.py -> audit_section_h_results.json.
+#        Results feed docs/claims/claim-4-residual-freedom.md.
 #
 #   I -- closed-form floor predictor validation, heavy-tail cycle and clique
 #        floors, and the regime-utility verdict (ticket 011).
-#        dev/audit_section_i.py
-#        -> dev/audit_section_i_results.json, dev/audit_section_i_report.md
-#        Results recorded in dev/algorithmic-claim.md sections 6.2 and 6.8.
+#        audit_section_i.py -> audit_section_i_results.json.
+#        Results feed docs/claims/claim-2-designed-counts.md.
 #
 # Note the re-lettering: ticket 010 originally reserved section G, which
 # ticket 008's order-four audit took; 010 became H and 011 became I.

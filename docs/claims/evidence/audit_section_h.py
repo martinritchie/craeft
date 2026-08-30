@@ -1,9 +1,9 @@
 """Section H of the control audit: LOCAL (per-node) signal and matching.
 
-Ticket 010. The acceptance criteria in dev/algorithmic-claim.md section 0 are
-global totals (P3, P4, P5); an L-layer message-passing network reads L-hop
-neighbourhoods, so the quantities it can actually see are per-node. This
-section measures the two local criteria the ticket proposes:
+Ticket 010. The global control criteria (P3, P4, P5) are graph-wide totals;
+an L-layer message-passing network reads L-hop neighbourhoods, so the
+quantities it can actually see are per-node. This section measures the two
+local criteria (results feed docs/claims/claim-4-residual-freedom.md):
 
   H1  P3-local -- per-node target-motif incidence against the
       DEGREE-CONDITIONAL floor, stratified by degree class. Reports the
@@ -19,15 +19,16 @@ section measures the two local criteria the ticket proposes:
   H3  the placement experiment -- heterogeneous pentagon family, default
       (capped, hub-correlated) placement vs prescribed placements that avoid
       the hubs. Tests the ticket's hypothesis that local SNR at participating
-      nodes clears 5x even though global P3 fails (the family sits at 0.8x
-      the floor, section 6.3).
+      nodes clears 5x even though global P3 fails for this family (it sits
+      at 0.8x the floor).
 
 Lives in its own file rather than in control_audit.py so the two can be
 developed in parallel; it imports the harness for the family definitions,
 seeding conventions and build wrapper. Merge into control_audit.py later.
 
 Run:
-  MPLCONFIGDIR=$TMPDIR .venv/bin/python dev/audit_section_h.py
+  MPLCONFIGDIR=$TMPDIR .venv/bin/python docs/claims/evidence/audit_section_h.py
+    -> docs/claims/evidence/audit_section_h_results.json
 """
 
 from __future__ import annotations

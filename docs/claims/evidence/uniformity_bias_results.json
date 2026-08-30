@@ -24,7 +24,7 @@
       },
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.171405,
       "mc_z_vs_exact": -0.213924723604809
     },
@@ -35,7 +35,7 @@
       },
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.172725,
       "mc_z_vs_exact": 1.3518343743927863
     },
@@ -46,7 +46,7 @@
       },
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.17198,
       "mc_z_vs_exact": 0.46812942893201936
     },
@@ -57,7 +57,7 @@
       },
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.16235,
       "mc_z_vs_exact": 0.731164198042819
     },
@@ -68,7 +68,7 @@
       },
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.160435,
       "mc_z_vs_exact": -1.5946607923298257
     },
@@ -79,7 +79,7 @@
       },
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
-      "ordering_sum_theorem_verified": true,
+      "closed_form_verified": true,
       "mc_frequency": 0.161105,
       "mc_z_vs_exact": -0.7809256782046659
     }

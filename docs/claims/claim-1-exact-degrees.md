@@ -26,30 +26,38 @@ measured value on a sequence small enough to enumerate.
 
 ### The exact form
 
-The pairing reduces to a chain whose state is the set of committed edges. The anchor
-stub is drawn uniformly, its partner uniformly from the rest, and a collision
-reshuffles without changing the state — a self-transition. Conditional on leaving a
-state with residual stub counts $s$ and $T = \sum_u s_u$ stubs remaining, edge
-$\{u, v\}$ is therefore committed with probability $s_u s_v / W$, where
+The pairing reduces to a chain whose state is the set of edges formed so far. An
+edge is *committed* when a proposed pair survives the collision checks and is
+recorded; a collision reshuffles and leaves the state unchanged — a self-transition,
+which drops out of the analysis. The anchor stub is drawn uniformly, its partner
+uniformly from the rest. Conditional on leaving a state with residual stub counts
+$s$ and $T = \sum_u s_u$ stubs remaining, edge $\{u, v\}$ is therefore committed
+with probability $s_u s_v / W$, where
 
 $$W \;=\; \tfrac{1}{2}\Big(T^2 - \sum_u s_u^2\Big) \;-\; \sum_{(a,b) \in E} s_a s_b.$$
 
 The first term counts the distinct-node stub pairs; the second removes pairs that
 would duplicate an edge already present.
 
-For a simple graph $g$ with $m$ edges and target degrees $d$, the probability that
-the process completes at $g$ is
+Now fix a simple graph $g$ with $m$ edges and target degrees $d$. The process
+reaches $g$ by committing its edges in some order $\pi$, and the probability of one
+such path is the product of the per-commit probabilities,
 
-$$P(g) \;=\; \Big(\prod_u d_u!\Big) \sum_{\pi} \prod_{t=1}^{m} \frac{1}{W_t(\pi)},$$
+$$\prod_{t=1}^{m} \frac{s_{u_t} s_{v_t}}{W_t(\pi)},$$
 
-where the sum runs over the $m!$ orderings $\pi$ of $g$'s edges and $W_t(\pi)$ is
-the weight of the state after the first $t-1$ commits.
+where $\{u_t, v_t\}$ is the $t$-th edge of the ordering and $W_t(\pi)$ is the
+weight of the state after the first $t-1$ commits.
 
-*Proof.* Along any ordering the numerator of the path probability is the product of
-$s_u s_v$ at each commit. Node $u$'s residual count takes each value
-$d_u, d_u - 1, \ldots, 1$ exactly once across its $d_u$ edges, whatever the order,
-so the numerator telescopes to $\prod_u d_u!$ — a constant across graphs and
-orderings. Only the normalisers remain. ∎
+The numerator of this product depends on neither the ordering nor the graph. Node
+$u$'s residual count starts at $d_u$ and falls by one at each of its $d_u$ edges,
+so across any ordering it takes each value $d_u, d_u - 1, \ldots, 1$ exactly once.
+The numerator therefore telescopes to $\prod_u d_u!$, and all that distinguishes
+one path from another is its normalisers.
+
+Summing over the $m!$ orderings of $g$'s edges gives the probability that the
+process completes at $g$:
+
+$$P(g) \;=\; \Big(\prod_u d_u!\Big) \sum_{\pi} \prod_{t=1}^{m} \frac{1}{W_t(\pi)}.$$
 
 Two consequences follow. If $W_t$ depended only on $t$, every graph would have the
 same probability: this recovers the classical fact that restart-from-scratch
@@ -94,7 +102,7 @@ Degree exactness: measured across all seven test families, 100% of nodes exact o
 every build. The runs live in [`control_audit.py`](evidence/control_audit.py) with
 exact values in [`control_audit_results.json`](evidence/control_audit_results.json).
 
-Sampler uniformity: the theorem verification (exact, per graph), the rational
+Sampler uniformity: the closed-form verification (exact, per graph), the rational
 evaluation, the first-order prediction, and the implementation Monte Carlo live in
 [`uniformity_bias.py`](evidence/uniformity_bias.py) with exact values in
 [`uniformity_bias_results.json`](evidence/uniformity_bias_results.json).
