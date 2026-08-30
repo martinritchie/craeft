@@ -12,11 +12,11 @@
 
 ## Why it holds
 
-During construction stub pairings that would create a self-loop or a duplicate edge are put back and
-redrawn, never deleted. Alternatively, dropping the colliding pair
-silently loses edges (roughly 27 per thousand-node build at typical densities) and
-poisons every downstream measurement, because the "matched" degree sequences are no
-longer matched. For non-graphical stub pools, those where no eligible pairings remain, the process starts afresh.
+During construction, stub pairings that would create a self-loop or a duplicate
+edge are put back and redrawn, never deleted. Dropping the colliding pair instead
+silently loses edges and poisons every downstream measurement, because the
+"matched" degree sequences are no longer matched. For non-graphical stub pools,
+those where no eligible pairings remain, the process starts afresh.
 
 ## The cost, quantified
 
