@@ -7,7 +7,7 @@
 | | |
 |:--|:--|
 | **Exact** | Realized degree = target degree, per node, every build. Asserted at build time: a violation raises rather than returning a graph. |
-| **Approximate** | Uniformity of the sampler over the space of compatible graphs (~1.5% bias per graph; see below). |
+| **Approximate** | Uniformity of the sampler over the space of compatible graphs. Quantified below: on the audited sequence, individual graph probabilities sit within 3% of uniform. |
 | **Not controlled** | Everything else — which is the point of [Claim 4](claim-4-residual-freedom.md). |
 
 ## Why it holds
@@ -16,27 +16,88 @@ During construction stub pairings that would create a self-loop or a duplicate e
 redrawn, never deleted. Alternatively, dropping the colliding pair
 silently loses edges (roughly 27 per thousand-node build at typical densities) and
 poisons every downstream measurement, because the "matched" degree sequences are no
-longer matched. For non-graphical stub pools, those where no eligble pairings remain, the process starts afresh. 
+longer matched. For non-graphical stub pools, those where no eligible pairings remain, the process starts afresh.
 
 ## The cost, quantified
 
+Retrying collisions makes the sampler non-uniform over the simple graphs with the
+target degree sequence. The deviation has an exact expression, derived below, and a
+measured value on a sequence small enough to enumerate.
 
-Retrying collisions makes the sampler slightly non-uniform over the possible graphs:
-graphs reachable by fewer collision paths are mildly favoured. Measured, the bias is
-~1.5% per graph and does not shift triangle counts detectably. Both sides of a matched
-pair share the same bias, so it cancels in the comparison a benchmark actually makes.
+### The exact form
 
-> MR: Its not clear what ~1.5% per graph means here.
+The pairing reduces to a chain whose state is the set of committed edges. The anchor
+stub is drawn uniformly, its partner uniformly from the rest, and a collision
+reshuffles without changing the state — a self-transition. Conditional on leaving a
+state with residual stub counts $s$ and $T = \sum_u s_u$ stubs remaining, edge
+$\{u, v\}$ is therefore committed with probability $s_u s_v / W$, where
 
+$$W \;=\; \tfrac{1}{2}\Big(T^2 - \sum_u s_u^2\Big) \;-\; \sum_{(a,b) \in E} s_a s_b.$$
+
+The first term counts the distinct-node stub pairs; the second removes pairs that
+would duplicate an edge already present.
+
+For a simple graph $g$ with $m$ edges and target degrees $d$, the probability that
+the process completes at $g$ is
+
+$$P(g) \;=\; \Big(\prod_u d_u!\Big) \sum_{\pi} \prod_{t=1}^{m} \frac{1}{W_t(\pi)},$$
+
+where the sum runs over the $m!$ orderings $\pi$ of $g$'s edges and $W_t(\pi)$ is
+the weight of the state after the first $t-1$ commits.
+
+*Proof.* Along any ordering the numerator of the path probability is the product of
+$s_u s_v$ at each commit. Node $u$'s residual count takes each value
+$d_u, d_u - 1, \ldots, 1$ exactly once across its $d_u$ edges, whatever the order,
+so the numerator telescopes to $\prod_u d_u!$ — a constant across graphs and
+orderings. Only the normalisers remain. ∎
+
+Two consequences follow. If $W_t$ depended only on $t$, every graph would have the
+same probability: this recovers the classical fact that restart-from-scratch
+rejection sampling is exactly uniform, since it conditions on no collision occurring
+rather than renormalising per state. The bias of the retrying sampler therefore
+lives entirely in the two exclusion terms of $W$. Expanding $1/W_t$ to first order
+in that excluded weight predicts the sign and symmetry of the deviation; on the
+audited sequence it gives ±1.86% against the exact ±2.95%, the gap being
+higher-order terms.
+
+Builds that reach a non-graphical residual abort and restart afresh. Conditioning
+on completion renormalises $P$ accordingly; the evaluation below includes this.
+
+### The measurement
+
+The audit sequence is $(3, 2, 2, 2, 1)$: heterogeneous, and small enough that all
+six of its simple graphs can be enumerated and $P(g)$ evaluated in exact rational
+arithmetic.
+
+| Quantity | Value |
+|:--|:--|
+| Max per-graph relative deviation from uniform | ±2.95% (exactly ±13091/443581) |
+| Total variation distance from uniform | 0.0148 |
+| Restart (dead-end) mass | 0.308 |
+| Monte Carlo of the implementation, 200,000 builds | max abs. z vs exact = 1.59 |
+
+The deviation is structured, not diffuse: the three under-sampled graphs are
+exactly those containing the edge between the degree-3 and the degree-1 node. The
+Monte Carlo run validates the one step the reduction does not give for free — that
+after a commit without a reshuffle, the remaining stub order is still uniform.
+
+Two limits on what this establishes. The bias is measured only at enumerable size,
+in a regime where collisions are frequent (restart mass 0.308); no measurement
+exists at production sizes. And the benchmark defence does not rest on the bias
+being small: both sides of a matched pair are generated by the same sampler, so the
+bias is a common-mode term that cancels in the comparison a benchmark actually
+makes.
 
 ## Evidence
 
-Measured across all seven test families: 100% of nodes exact on every build. The runs
-live in [`control_audit.py`](evidence/control_audit.py) with exact values in
-[`control_audit_results.json`](evidence/control_audit_results.json).
+Degree exactness: measured across all seven test families, 100% of nodes exact on
+every build. The runs live in [`control_audit.py`](evidence/control_audit.py) with
+exact values in [`control_audit_results.json`](evidence/control_audit_results.json).
 
-> The claim of exact degree sequences should be supported with an `assert` or a validator. 
-> The 1.5% will require empirical evidence or a mathematical result, ideally the former validated against the latter.
+Sampler uniformity: the theorem verification (exact, per graph), the rational
+evaluation, the first-order prediction, and the implementation Monte Carlo live in
+[`uniformity_bias.py`](evidence/uniformity_bias.py) with exact values in
+[`uniformity_bias_results.json`](evidence/uniformity_bias_results.json).
 
 ## Where in the code
 

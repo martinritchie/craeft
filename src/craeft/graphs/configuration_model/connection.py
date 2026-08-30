@@ -183,10 +183,11 @@ class Connector:
         Sampling guarantee: realised degrees equal ``singles``
         exactly, element-wise. The resulting graph is only
         *approximately* uniform over simple graphs with that degree
-        sequence — local reselection introduces a small, measured
-        bias (~1-2% typical, ~5% worst case per-graph deviation on
-        small heterogeneous degree sequences; no detectable effect on
-        triangle counts in measurements taken). Exactly uniform
+        sequence — local reselection introduces a small sampling
+        bias, derived exactly and measured at ±2.95% per-graph
+        deviation from uniform on an enumerable heterogeneous
+        sequence (see ``docs/claims/claim-1-exact-degrees.md`` for
+        the derivation and its limits). Exactly uniform
         sampling would require discarding the *entire* pairing and
         restarting from scratch on any collision, which is
         infeasible in practice: that acceptance rate is independent

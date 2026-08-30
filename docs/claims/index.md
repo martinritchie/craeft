@@ -103,8 +103,9 @@ participation sequences that are known to be buildable.
 
 Every node ends with exactly the degree you asked for. Not on average. Not
 approximately. Element-wise, on every build. The builder asserts the invariant on
-every run. The guarantee costs a small, known sampling bias (~1.5% per graph) that
-cancels in matched pairs.
+every run. The guarantee costs a small sampling bias — derived exactly and measured
+at within 3% of uniform per graph on an enumerable sequence — that cancels in
+matched pairs.
 
 ### [Claim 2 — Subgraph counts are set by the input, not by luck](claim-2-designed-counts.md)
 
@@ -298,8 +299,10 @@ Each rule has a measured reason behind it.
 
 - **Sampling bias of the matching algorithm.** The published 2017 paper (§2.3) shows
   the matching algorithm is itself biased and names an unbiased alternative, the
-  *refusing algorithm*. The measured retry bias here is small (~1.5%) and cancels in
-  matched pairs, but the refusing algorithm has not been implemented or compared.
+  *refusing algorithm*. The retry bias here has an exact expression and a measured
+  value (max per-graph deviation from uniform 2.95% on the audited sequence; see
+  [Claim 1](claim-1-exact-degrees.md)) and cancels in matched pairs, but the
+  refusing algorithm has not been implemented or compared.
 - **The automorphism-cardinality conjecture** from the 2014 paper remains unproven.
   It is the only unproven claim in the corpus.
 - **Deliberate hub concentration.** Measurement shows the 2017 paper's assortativity
