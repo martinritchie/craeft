@@ -1,5 +1,5 @@
 site_name: craeft
-site_description: Random networks. Controlled structure. Stochastic simulation.
+site_description: Random graphs. Controlled structure. Stochastic simulation.
 site_author: Martin Ritchie
 
 site_url: https://martinritchie.github.io/craeft/
@@ -72,19 +72,19 @@ exclude_docs: |
   internal/
 
 nav:
-  - Home: index.md
+  - Home:
+      - index.md
+      - "The Claims": claims/index.md
+      - "Claim 1 — Exact degrees": claims/claim-1-exact-degrees.md
+      - "Claim 2 — Designed counts": claims/claim-2-designed-counts.md
+      - "Claim 3 — Clustering in advance": claims/claim-3-clustering-in-advance.md
+      - "Claim 4 — Residual freedom": claims/claim-4-residual-freedom.md
   - Getting Started: getting-started.md
   - Concepts:
       - Clustered Configuration Model: concepts/ccm.md
       - Sequential Conditional Sampling: concepts/sequential-conditional-sampling.md
       - Motifs & Notation: concepts/motifs.md
       - Gillespie Algorithm: concepts/gillespie.md
-  - Claims:
-      - claims/index.md
-      - "Claim 1 — Exact degrees": claims/claim-1-exact-degrees.md
-      - "Claim 2 — Designed counts": claims/claim-2-designed-counts.md
-      - "Claim 3 — Clustering in advance": claims/claim-3-clustering-in-advance.md
-      - "Claim 4 — Residual freedom": claims/claim-4-residual-freedom.md
   - API Reference:
       - api/index.md
       - Graph Generation (new):

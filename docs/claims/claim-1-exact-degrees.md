@@ -1,7 +1,6 @@
 # Claim 1 — The degree sequence is exact
 
-**Every node ends with exactly the degree you asked for. Not on average. Not
-approximately. Element-wise, on every build.**
+**The number of edges (stubs) originating from each node is exact.**
 
 ## What is held
 
@@ -13,25 +12,31 @@ approximately. Element-wise, on every build.**
 
 ## Why it holds
 
-Stub pairings that would create a self-loop or a duplicate edge are put back and
-redrawn, never deleted. The tempting alternative — dropping the colliding pair —
+During construction stub pairings that would create a self-loop or a duplicate edge are put back and
+redrawn, never deleted. Alternatively, dropping the colliding pair
 silently loses edges (roughly 27 per thousand-node build at typical densities) and
 poisons every downstream measurement, because the "matched" degree sequences are no
-longer matched. If the stub pool deadlocks, the builder resets and rewires from
-scratch instead of compromising.
+longer matched. For non-graphical stub pools, those where no eligble pairings remain, the process starts afresh. 
 
 ## The cost, quantified
+
 
 Retrying collisions makes the sampler slightly non-uniform over the possible graphs:
 graphs reachable by fewer collision paths are mildly favoured. Measured, the bias is
 ~1.5% per graph and does not shift triangle counts detectably. Both sides of a matched
 pair share the same bias, so it cancels in the comparison a benchmark actually makes.
 
+> MR: Its not clear what ~1.5% per graph means here.
+
+
 ## Evidence
 
 Measured across all seven test families: 100% of nodes exact on every build. The runs
 live in [`control_audit.py`](evidence/control_audit.py) with exact values in
 [`control_audit_results.json`](evidence/control_audit_results.json).
+
+> The claim of exact degree sequences should be supported with an `assert` or a validator. 
+> The 1.5% will require empirical evidence or a mathematical result, ideally the former validated against the latter.
 
 ## Where in the code
 

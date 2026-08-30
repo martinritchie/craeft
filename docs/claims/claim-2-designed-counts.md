@@ -1,7 +1,6 @@
-# Claim 2 — Subgraph counts are set by the input, not by luck
+# Claim 2 — Limited control of a Node's subgraph participation 
 
-**The number of triangles, squares or diamonds you design is the number the generator
-builds: realized count = designed count + the by-product floor.**
+**The number of subgraphs originating from each node is approximately controlled.**
 
 ## What is held
 
@@ -11,6 +10,8 @@ builds: realized count = designed count + the by-product floor.**
 | **Approximate** | Designed counts under *sampled* participation: the degree budget caps each node's participation, and where the cap bites you get fewer shapes than the nominal rate asks for — measured at 62% of nominal in the worst configuration studied (the zero-slack regime). |
 | **Not controlled** | The floor itself. It cannot be removed, only predicted and designed above. |
 
+> MR: _holds within 2% across every family tested._ - is not exact.
+
 ## The floor is predictable
 
 The by-product floor is a closed-form pre-flight calculation, not a build-and-see. The
@@ -19,6 +20,9 @@ $\kappa = \langle k(k-1)\rangle / \langle k\rangle$, and the expected floor for
 length-$L$ cycles is
 
 $$\frac{\kappa^L}{2L}.$$
+
+> MR: using kappa and k together strains my eyes. I think it would be nicer to break out the fraction into a \frac{}{} encaped in double dollars. 
+> Its not clear how the floor is derived from the excess degree nor how this relates to length L cycles. 
 
 This one expression reproduces every floor measured in this project to within ~16%. It
 over-predicts under heavy-tailed degrees, which is the safe direction: it never

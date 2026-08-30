@@ -1,6 +1,6 @@
 # Generators
 
-Network generation via config → graph pipelines and legacy generator
+Graph generation via config → graph pipelines and legacy generator
 dataclasses.
 
 ## Graph base classes (new API)

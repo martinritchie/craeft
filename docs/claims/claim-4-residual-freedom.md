@@ -1,4 +1,4 @@
-# Claim 4 — Higher-order structure stays free
+# Claim 4 — Higher-order structures: what is and is not controlled
 
 **With degrees and clustering pinned, real freedom remains: which four-node shapes
 appear, how shapes are placed across nodes, how local clustering varies with degree.

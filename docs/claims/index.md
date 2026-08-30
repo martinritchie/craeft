@@ -23,39 +23,38 @@ behind it, and every number here was produced by the scripts in
 
 ## 1. The idea in one page
 
-Graph neural networks learn by passing messages between neighbouring nodes. That makes
-some properties easy for them to see. Node degree is the obvious one. The open question
-is whether they can see anything deeper — the shapes a network is woven from.
+The generator builds graphs to order. Hand it a degree sequence, a set of small
+subgraph shapes and a count of how many of each shape each node should join, and it
+wires a graph that honours all three: every degree exact, the subgraph counts set by
+design, the clustering coefficient known before the build begins.
 
-To answer that, you need a controlled experiment. Take two families of graphs. Make them
-identical in everything a message-passing network trivially captures: same degree
-sequence, same edge count, same clustering. Let them differ in exactly one thing — the
-subgraphs they are built from. If a model's accuracy moves across that pair, the cause is
-unambiguous.
+That combination makes controlled experiments on graph structure possible. Two
+graphs can share a degree distribution and a clustering coefficient and still differ
+in the shapes they are woven from — and the difference matters. It changes how an
+epidemic spreads. It changes what a learning algorithm can read from the graph. To
+study any effect of this kind you need graph families identical in everything except
+the structure under test, and building those families is what the generator is for.
 
 The underlying theory comes from three papers:
 
-- **Ritchie, Berthouze, House & Kiss (2014, JTB)** showed the effect is real. Networks
-  can share a degree distribution *and* a clustering coefficient yet differ in their
-  four-node structure — and those differences change how epidemics spread. The paper
-  also built the metrics that make the difference measurable.
-- **Ritchie, Berthouze & Kiss (2016, JMB)** built the theory: how to describe networks
+- **Ritchie, Berthouze, House & Kiss (2014, JTB)** showed the effect is real:
+  four-node structure changes epidemic outcomes even with degrees and clustering held
+  fixed. The paper also built the metrics that make the difference measurable.
+- **Ritchie, Berthouze & Kiss (2016, JMB)** built the theory: how to describe graphs
   assembled from arbitrary subgraphs — including ones that are not fully connected —
   and how to derive epidemic equations for them automatically.
 - **Ritchie, Berthouze & Kiss (2017, JCN)** built the generators: two algorithms that
-  construct networks from subgraph building blocks while preserving an exact degree
+  construct graphs from subgraph building blocks while preserving an exact degree
   sequence.
 
 One of those generators is the tool this project develops: **orbit-resolved CMA**
-(cardinality matching algorithm). You hand it a degree sequence, a set of subgraph
-shapes, and a count of how many of each shape each node should join. It wires the
-network accordingly. Everything below is about what that tool guarantees, what it
-assumes, and what it quietly does not control.
+(cardinality matching algorithm). Everything below is about what that tool guarantees,
+what it assumes, and what it quietly does not control.
 
-One thing to hold onto: the burden of proof is unusually high. A benchmark's negative
-result — "the GNN saw nothing" — is only informative if the structural contrast was
-real. So every claim comes in three parts: what is held exactly, what is held
-approximately, and what is not controlled at all.
+One thing to hold onto: the burden of proof is deliberately high. A controlled
+comparison is only informative if the contrast is real — if the families differ where
+the design says they differ, and nowhere else. So every claim comes in three parts:
+what is held exactly, what is held approximately, and what is not controlled at all.
 
 ---
 

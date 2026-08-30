@@ -3,6 +3,8 @@
 **Designed clustering is a closed-form calculation from the inputs. No build
 required.**
 
+> MR: Is this exact or approximate? What claims can we make about _local_ clustering?
+
 ## Why it holds
 
 Because the degree sequence is pinned ([Claim 1](claim-1-exact-degrees.md)), the

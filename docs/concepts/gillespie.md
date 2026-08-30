@@ -68,7 +68,7 @@ The `simulate` function runs many realisations and aggregates results:
 
 ## SIR as a concrete example
 
-The SIR (Susceptible-Infected-Recovered) model on a network is the
+The SIR (Susceptible-Infected-Recovered) model on a graph is the
 primary concrete implementation:
 
 - **Events**: infection (S → I) and recovery (I → R)

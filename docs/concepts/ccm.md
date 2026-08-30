@@ -1,8 +1,8 @@
 # Clustered Configuration Model
 
-The Clustered Configuration Model (CCM) generates networks with both a
+The Clustered Configuration Model (CCM) generates graphs with both a
 prescribed degree sequence *and* a target clustering coefficient $\phi$. It
-does this by embedding subgraph instances (motifs) into the network, then
+does this by embedding subgraph instances (motifs) into the graph, then
 pairing remaining single stubs via the standard configuration model.
 
 !!! note "Reference"

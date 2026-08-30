@@ -11,16 +11,21 @@ documentation.
 
 ## Primary terms
 
-### Network structure
+### Graph structure
 
 | Standard term | Definition | Avoid |
 |---------------|------------|-------|
-| **network** | A collection of nodes connected by edges | graph (except in mathematical definitions) |
-| **node** | A vertex in the network | vertex (except in mathematical contexts) |
+| **graph** | A collection of nodes connected by edges | network |
+| **node** | A vertex in the graph | vertex (except in mathematical contexts) |
 | **edge** | A connection between two nodes | link, connection, arc |
 | **adjacency matrix** | Square matrix where entry (i,j) = 1 if nodes i and j are connected | |
 | **degree** | Number of edges incident to a node | connectivity |
-| **degree sequence** | Ordered list of all node degrees in the network | |
+| **degree sequence** | Ordered list of all node degrees in the graph | |
+
+"Graph" is the standard term in prose and in the current API, which exposes
+`ConfigModelGraph`, `ErdosRenyiGraph` and a config → graph pipeline. The legacy
+tree keeps the older name in its import paths and identifiers — `craeft.networks`,
+`NetworkGenerator`, `sample_network` — and documentation quotes those verbatim.
 
 ### Subgraphs and orbits
 
@@ -47,7 +52,7 @@ documentation.
 
 ## Parameter naming
 
-### Network generation
+### Graph generation
 
 | Parameter | Symbol | Description | Range |
 |-----------|--------|-------------|-------|
@@ -76,7 +81,7 @@ For subgraphs beyond 5 nodes, standard graph-theoretic notation is used
 | network-simulation | craeft | Original repository name |
 | netsubgraph | craeft | First package name |
 | motifnet | craeft | Second package name |
-| graph | network | Use "network" in code |
+| network | graph | Use "graph" in prose and in new code |
 | motif | subgraph | Use "subgraph" for the recurring pattern concept |
 | corner / corner type | orbit | Use "orbit" for structurally equivalent vertex groups |
 | cardinality | orbit degree | Use "orbit degree" |
