@@ -1,0 +1,4 @@
+# Committed JSON is generated output (evidence results and the like):
+# collapsed in GitHub PR diffs and excluded from diff/language statistics,
+# but fully tracked.
+*.json linguist-generated=true

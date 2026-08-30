@@ -32,7 +32,7 @@ from craeft import (
 
 | Package | Description |
 |---------|-------------|
-| [`craeft.networks.generation`](generators.md) | Network generator protocol and implementations |
+| [`craeft.networks.generation`](generators.md) | Graph generator protocol and implementations |
 | [`craeft.networks.generation.configuration_model`](configuration-model.md) | CCM pipeline (partition, connectors, pairing, assembly) |
 | [`craeft.networks.generation.motifs`](motifs.md) | Motif definitions and registry |
 | [`craeft.networks.generation.distributions`](distributions.md) | Degree distribution sampling |

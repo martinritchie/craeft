@@ -20,7 +20,7 @@ orbit $o$ has:
 - **degree** $\delta_o$: the degree of those vertices within $H$ (all vertices
   in the same orbit share the same degree — automorphisms preserve adjacency)
 
-Each node $i$ in the network has:
+Each node $i$ in the graph has:
 
 - $s_i$: its **participation count** — how many instances of $H$ it appears in
 - $d_i$: its **degree budget** — the stubs still available after accounting for
@@ -31,7 +31,7 @@ Each node $i$ in the network has:
 We need a matrix $C \in \mathbb{Z}_{\geq 0}^{n \times k}$ where $C_{io}$ is
 the number of times node $i$ fills a position in orbit $o$.
 
-For example, with a diamond subgraph and four network nodes:
+For example, with a diamond subgraph and four graph nodes:
 
 $$C = \begin{pmatrix} 2 & 1 \\ 1 & 1 \\ 1 & 1 \\ 0 & 1 \end{pmatrix}$$
 
@@ -198,7 +198,7 @@ Consider the diamond (G7):
 - Orbit 0: $\sigma_0 = 2$ vertices, $\delta_0 = 3$ stubs each
 - Orbit 1: $\sigma_1 = 2$ vertices, $\delta_1 = 2$ stubs each
 
-Suppose $n = 4$ network nodes, degree budget $d = [8, 6, 5, 5]$, and
+Suppose $n = 4$ graph nodes, degree budget $d = [8, 6, 5, 5]$, and
 participation sequence $s = [3, 2, 2, 1]$.
 
 Total participations: $\sum s_i = 8$, subgraph size $|V(H)| = 4$, so $M = 2$
@@ -443,7 +443,7 @@ malformed prescription fails at the point it is written:
    say, 2 hub-instances but only 1 leaf-instance is rejected.
 
 Note what is *absent*: the array length is not checked against $n$,
-because a `SubgraphSequence` has no idea which network it will be used
+because a `SubgraphSequence` has no idea which graph it will be used
 with. Nor is the degree budget, for the same reason.
 
 **Pre-flight in `from_config`** — everything needing the config, run
@@ -492,11 +492,11 @@ $i$ depends only on $s_i$, not on what earlier nodes happened to draw.
 **`split_by_degree_rank(sequence, degrees, orbits)`** — the "push
 clustered subgraphs onto hubs" construction. Ranks orbits by
 within-subgraph degree $\delta_o$ (hub roles first) and nodes by
-network degree (highest first), then greedily fills each orbit's
+graph degree (highest first), then greedily fills each orbit's
 target from the highest-remaining-degree nodes with capacity left. This
 is the 2017 paper's §3.3 construction, which "opted to push the
 clustered subgraphs onto the higher-degree nodes to accentuate the
-effect of clustering" and produced measurably more assortative networks
+effect of clustering" and produced measurably more assortative graphs
 (2017 Fig. 8). Doing it deliberately, rather than as a side effect of
 greedy allocation order, makes that assortativity shift (ticket 005) a
 controlled variable instead of an incidental one.
@@ -518,7 +518,7 @@ it possibly could, is that enough?" The second says "if every node took as few
 hub roles as it could get away with, would that already overshoot?"
 
 For $k = 2$, these conditions are both necessary **and** sufficient — a
-consequence of the max-flow min-cut theorem on the trivial bipartite network. If
+consequence of the max-flow min-cut theorem on the trivial bipartite graph. If
 they hold, the sequential algorithm is guaranteed to complete without hitting
 infeasibility at any step.
 

@@ -1,9 +1,9 @@
 # Getting Started
 
-This guide walks through the core workflows: generating networks with
+This guide walks through the core workflows: generating graphs with
 controlled clustering and running epidemic simulations on them.
 
-## Generating networks
+## Generating graphs
 
 ### Erdos-Renyi random graph
 
@@ -68,7 +68,7 @@ subgraphs (like the diamond, which has hub and leaf orbits).
 
 ### Using generator objects (legacy API)
 
-For experiments that generate many networks with the same parameters,
+For experiments that generate many graphs with the same parameters,
 the legacy `networks/` API provides frozen dataclass generators:
 
 ```python
@@ -88,7 +88,7 @@ gen = BigVRewiringGenerator(base=base, target_clustering=0.2)
 adjacency = gen.generate(rng)
 ```
 
-## Measuring network structure
+## Measuring graph structure
 
 ```python
 from craeft.graphs.metrics.clustering import global_clustering_coefficient
@@ -147,7 +147,7 @@ print(f"Mean final size: {result.scalar_output_mean:.1f}")
 ## Running full experiments
 
 The `Experiment` class composes a generator and simulator, running
-multiple network realisations with optional parallelism.
+multiple graph realisations with optional parallelism.
 
 ```python
 from craeft import Experiment
@@ -167,7 +167,7 @@ experiment = Experiment(generator=generator, simulator=simulator, n_networks=10)
 results = experiment.run(rng=rng, n_workers=1)
 
 for i, ensemble in enumerate(results):
-    print(f"Network {i}: final size = {ensemble.scalar_output_mean:.1f}")
+    print(f"Graph {i}: final size = {ensemble.scalar_output_mean:.1f}")
 ```
 
 ## Plotting

@@ -1,28 +1,37 @@
 # craeft
 
-**Random networks. Controlled structure. Stochastic simulation.**
+**Random graphs. Controlled structure. Stochastic simulation.**
 
-craeft provides tools for constructing random networks where you control
-not just the degree sequence but also the clustering coefficient and
-local motif structure. It pairs these generators with a generic Gillespie
-simulation engine for running any continuous-time Markov chain on the
-resulting networks.
+craeft is a Python library that generates random graphs with an exact
+degree sequence, designed counts of chosen subgraphs and a clustering 
+coefficient computable in closed form before the
+build begins.
 
-## Features
+Graphs like this make controlled experiments possible. Two families
+can have eqaul summary statistics: degrees, edge counts,
+clustering but still differ in their subgraph arrangements. craeft
+builds families that differ in exactly this way.
 
-- **Network generation with controlled clustering** — configuration model
-  with orbit-aware subgraph embedding, Erdos-Renyi, and degree-preserving
-  rewiring algorithms
-- **Orbit-aware motif construction** — embed triangles, diamonds, cliques, and
-  other substructures with correct handling of non-vertex-transitive subgraphs
-  (via sequential conditional sampling)
-- **Config → graph pipeline** — stateless `GraphConfig` dataclasses produce
-  `BaseGraph` objects with CSR-backed adjacency, cluster coefficient, degrees,
-  and export methods
-- **Process-agnostic simulation engine** — Gillespie algorithm with
-  convergence monitoring, ensemble aggregation, and multiprocessing support
-- **Extensible point processes** — implement the `ContinuousTimeProcess`
-  interface for any CTMC; SIR epidemics included as a reference implementation
+Alongside the configuration-model generator, the library ships Erdős–Rényi
+and degree-preserving rewiring baselines. The simulation engine accepts any
+process implementing the `ContinuousTimeProcess` interface, with convergence
+monitoring, ensemble aggregation and multiprocessing; SIR epidemics are
+included as the reference implementation.
+
+## Bringing the Claims into Focus
+
+The claims below are stated precisely, measured, and shipped with the scripts
+that produced every number — see [The Claims](claims/index.md).
+
+1. **[The degree sequence is exact](claims/claim-1-exact-degrees.md)** —
+   element-wise, on every build, asserted at runtime.
+2. **[Subgraph counts are set by the input](claims/claim-2-designed-counts.md)** —
+   realized count = designed count + a floor that is predictable in closed
+   form.
+3. **[Clustering is known before the graph exists](claims/claim-3-clustering-in-advance.md)** —
+   a closed-form calculation from the configuration alone.
+4. **[Higher-order structure stays free](claims/claim-4-residual-freedom.md)** —
+   and what stays free is measured, not ignored.
 
 ## Quick example
 
@@ -38,7 +47,7 @@ from craeft.point_processes import ConvergenceConfig
 
 rng = np.random.default_rng(42)
 
-# Generate a clustered network with triangle subgraphs
+# Generate a clustered graph with triangle subgraphs
 triangle = Subgraph(adjacency=np.array([[0, 1, 1], [1, 0, 1], [1, 1, 0]]))
 tri_seq = SubgraphSequence(subgraph=triangle, distribution=poisson(0.2))
 
@@ -74,30 +83,13 @@ With plotting support:
 uv add "craeft[plot]"
 ```
 
-## Project layout
+## Where next
 
-```
-src/craeft/
-├── graphs/                    # Graph generation (new architecture)
-│   ├── base.py                # BaseGraph, UndirectedGraph, Subgraph
-│   ├── erdos_renyi.py         # Erdos-Renyi G(n, p)
-│   ├── metrics/               # Clustering, connectivity
-│   └── configuration_model/   # Config model + CMA pipeline
-│       ├── models.py          # ConfigModelConfig, ConfigModelGraph
-│       ├── connection.py      # Connector (subgraph + single pairing)
-│       └── sequence/          # Participation sampling, orbit splitting, allocation
-├── networks/                  # Network generation (legacy API)
-│   ├── generation/
-│   │   ├── configuration_model/  # Legacy CCM pipeline
-│   │   ├── distributions/    # Degree distributions
-│   │   └── motifs/           # Graphlet definitions (G0–G29)
-│   ├── metrics/              # Clustering, connectivity
-│   └── rewiring/             # Big-V, motif decomposition
-├── point_processes/
-│   ├── epidemics/            # SIR model
-│   ├── gillespie.py          # Simulation engine
-│   └── process.py            # Core abstractions
-├── utils/
-│   └── plotting.py           # Visualisation
-└── experiment.py             # Orchestration
-```
+- **[Getting started](getting-started.md)** — from installation to a first
+  graph and simulation.
+- **[Concepts](concepts/ccm.md)** — the clustered configuration model, the
+  sampling scheme behind it, and the Gillespie algorithm.
+- **[The Claims](claims/index.md)** — what is guaranteed, what is assumed,
+  and what is left uncontrolled, with the audit scripts behind every number.
+- **[API reference](api/index.md)** — generators, metrics, the simulation
+  engine and plotting, documented from the source.

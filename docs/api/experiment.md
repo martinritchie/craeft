@@ -1,7 +1,7 @@
 # Experiment
 
 Orchestration layer that composes a `NetworkGenerator` and
-`EpidemicSimulator` to run multi-network experiments with optional
+`EpidemicSimulator` to run multi-graph experiments with optional
 parallelism.
 
 ::: craeft.experiment

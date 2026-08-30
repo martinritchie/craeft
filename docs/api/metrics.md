@@ -1,6 +1,6 @@
 # Metrics
 
-Network structural analysis: clustering, degree correlation, order-four structure,
+Graph structural analysis: clustering, degree correlation, order-four structure,
 and connectivity.
 
 ## Clustering (new API)
@@ -78,7 +78,7 @@ cycles_per_node(a, L).sum() == L * induced_cycle_count(a, L)
 ```
 
 holds exactly. Cost scales roughly as `n * mean_degree**(L - 1)` — diagnostic
-metrics for moderate-size networks, not large ones.
+metrics for moderate-size graphs, not large ones.
 
 ::: craeft.graphs.metrics.cycles
     options:
@@ -99,7 +99,7 @@ metrics for moderate-size networks, not large ones.
 
 Ratios and per-node counts of connected 4-node induced subgraphs (2014
 Section 2.2, item 4). Clustering is the *matched* quantity in a dataset
-pair; order-four composition is what actually distinguishes networks with
+pair; order-four composition is what actually distinguishes graphs with
 identical degree distribution and identical clustering.
 
 ### Numbering

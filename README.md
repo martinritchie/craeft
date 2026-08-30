@@ -50,6 +50,28 @@ print(graph.clustering_coefficient)  # > 0.0
 adj = graph.to_csr()  # scipy sparse CSR matrix
 ```
 
+## What is guaranteed
+
+Graphs are built to a contract. The four claims, each with the evidence behind
+it, live in the [Claims section](https://martinritchie.github.io/craeft/claims/)
+of the docs:
+
+1. **The degree sequence is exact** — element-wise, on every build, asserted at
+   build time. The cost is a small sampling bias, derived exactly and measured
+   at within 3% of uniform per graph on an enumerable sequence.
+2. **Subgraph counts are set by the input, not by luck** — realized count =
+   designed count + a by-product floor that is predictable in closed form
+   before anything is built.
+3. **Clustering is known before the graph exists** —
+   `designed_clustering(config)` is a closed-form calculation; the realized
+   value lands within ~2% of designed + floor.
+4. **Higher-order structure stays free** — with degrees and clustering pinned,
+   which shapes appear and where remains the experimental variable, and its
+   confounds are measured rather than assumed.
+
+Every number in those pages traces to a checked-in script and its committed raw
+output under [`docs/claims/evidence/`](docs/claims/evidence/).
+
 ## Network generators
 
 | Generator | What it does |
@@ -79,6 +101,10 @@ print(f"Mean final size: {result.scalar_output_mean:.0f}")
 Implement `ContinuousTimeProcess` to plug in your own dynamics.
 
 ## Documentation
+
+Full documentation — concepts, API reference, and the claims with their
+evidence — is at [martinritchie.github.io/craeft](https://martinritchie.github.io/craeft/).
+To serve it locally:
 
 ```bash
 uv sync

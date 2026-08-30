@@ -1,8 +1,8 @@
 # Clustered Configuration Model
 
-The Clustered Configuration Model (CCM) generates networks with both a
+The Clustered Configuration Model (CCM) generates graphs with both a
 prescribed degree sequence *and* a target clustering coefficient $\phi$. It
-does this by embedding subgraph instances (motifs) into the network, then
+does this by embedding subgraph instances (motifs) into the graph, then
 pairing remaining single stubs via the standard configuration model.
 
 !!! note "Reference"
@@ -84,9 +84,10 @@ approximate degrees are acceptable.
 
 **What "uniform" does and does not mean.** Degree sequences are preserved *exactly*.
 Sampling is only *approximately* uniform over simple graphs with that degree
-sequence: local reselection introduces a small, measured bias (per-graph deviation
-from uniform ~1-2% typical, ~5% worst case, on small heterogeneous degree sequences),
-with no detectable effect on triangle counts. Exactly uniform sampling requires
+sequence: local reselection introduces a small sampling bias, derived exactly and
+measured at ±2.95% per-graph deviation from uniform on an enumerable heterogeneous
+sequence (see [Claim 1](../claims/claim-1-exact-degrees.md) for the derivation,
+the metrics, and the limits of the measurement). Exactly uniform sampling requires
 discarding the *entire* pairing and restarting from scratch on any collision — the
 acceptance rate for that is independent of `n` and collapses exponentially in mean
 degree, making it infeasible once mean degree exceeds roughly 6. For dataset
