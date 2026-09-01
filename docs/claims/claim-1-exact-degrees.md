@@ -59,12 +59,22 @@ process completes at $g$:
 
 $$P(g) \;=\; \Big(\prod_u d_u!\Big) \sum_{\pi} \prod_{t=1}^{m} \frac{1}{W_t(\pi)}.$$
 
-Two consequences follow. If $W_t$ depended only on $t$, every graph would have the
-same probability: this recovers the classical fact that restart-from-scratch
-rejection sampling is exactly uniform, since it conditions on no collision occurring
-rather than renormalising per state. The bias of the retrying sampler therefore
-lives entirely in the two exclusion terms of $W$. Expanding $1/W_t$ to first order
-in that excluded weight predicts the sign and symmetry of the deviation; on the
+Two consequences follow. Remove both exclusion terms and $W_t$ depends only on
+$t$: it becomes $T_t(T_t - 1)/2$ with $T_t = 2m - 2(t - 1)$, the sum over
+orderings collapses to $m!\,2^m/(2m)! = 1/(2m-1)!!$, and
+
+$$P(g) \;=\; \frac{\prod_u d_u!}{(2m-1)!!}$$
+
+for every simple graph alike. This is the configuration model's own law restricted
+to simple graphs — equation (7.5.2) of van der Hofstad's *Random Graphs and Complex
+Networks*, obtained there from Proposition 7.7 — and it recovers the classical fact
+that restart-from-scratch rejection sampling, the *repeated configuration model*
+of the literature, is exactly uniform: it conditions on no collision occurring
+rather than renormalising per state. The closed form above is therefore that law
+with a single substitution, the constant $(2m-1)!!$ replaced by an ordering- and
+graph-dependent product of normalisers, and the bias of the retrying sampler lives
+entirely in the two exclusion terms of $W$. Expanding $1/W_t$ to first order in
+that excluded weight predicts the sign and symmetry of the deviation; on the
 audited sequence it gives ±1.86% against the exact ±2.95%, the gap being
 higher-order terms.
 
@@ -82,12 +92,21 @@ arithmetic.
 | Max per-graph relative deviation from uniform | ±2.95% (exactly ±13091/443581) |
 | Total variation distance from uniform | 0.0148 |
 | Restart (dead-end) mass | 0.308 |
+| Configuration-model law per simple graph, eq. (7.5.2) | 16/315, returned by the closed form with the exclusions removed, on all six graphs |
+| Restart rate of the repeated configuration model | 0.695 (exactly 73/105) |
 | Monte Carlo of the implementation, 200,000 builds | max abs. z vs exact = 1.59 |
 
 The deviation is structured, not diffuse: the three under-sampled graphs are
 exactly those containing the edge between the degree-3 and the degree-1 node. The
 Monte Carlo run validates the one step the reduction does not give for free — that
 after a commit without a reshuffle, the remaining stub order is still uniform.
+
+The two restart rates are the two sides of the trade. The repeated configuration
+model discards a draw whenever the pairing is not simple, which on this sequence
+happens with probability 0.695; retrying discards only builds that reach a
+non-graphical residual, 0.308, a factor of 2.25 fewer, and the ±2.95% is what that
+difference buys. They are rejection rates of different events — the costs being
+traded, not two measurements of one quantity.
 
 Two limits on what this establishes. The bias is measured only at enumerable size,
 in a regime where collisions are frequent (restart mass 0.308); no measurement
@@ -105,7 +124,21 @@ exact values in [`control_audit_results.json`](evidence/control_audit_results.js
 Sampler uniformity: the closed-form verification (exact, per graph), the rational
 evaluation, the first-order prediction, and the implementation Monte Carlo live in
 [`uniformity_bias.py`](evidence/uniformity_bias.py) with exact values in
-[`uniformity_bias_results.json`](evidence/uniformity_bias_results.json).
+[`uniformity_bias_results.json`](evidence/uniformity_bias_results.json). The
+closed form is checked from outside its own derivation as well as against the
+dynamic programme: with the exclusion terms removed it must return equation
+(7.5.2), $\prod_u d_u!/(2m-1)!! = 48/945 = 16/315$, for every simple graph, and it
+does on all six. The book reaches that $\prod_u d_u!$ by an unrelated route — as
+the number of ways to permute the half-edges at each vertex without changing the
+graph — so the telescoping step rests on two independent derivations of one
+constant. Summing the reference over the six graphs gives the probability $32/105$
+that uniform pairing is simple, hence the repeated model's restart rate $73/105$.
+
+!!! info "Reference"
+    van der Hofstad, R. *Random Graphs and Complex Networks*, Vol. 1, Chapter 7,
+    Configuration Model — Definition 7.5, Proposition 7.7, §7.4 and equation
+    (7.5.2). Lecture-notes edition at
+    [rhofstad.win.tue.nl/Cap_Sel_Connectivity_in_RG.html](https://rhofstad.win.tue.nl/Cap_Sel_Connectivity_in_RG.html).
 
 ## Where in the code
 

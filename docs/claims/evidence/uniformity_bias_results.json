@@ -11,6 +11,23 @@
     "fraction": "197774/641355",
     "value": 0.308369000007796
   },
+  "configuration_model_reference": {
+    "source": "van der Hofstad, Random Graphs and Complex Networks, Vol. 1, Ch. 7, eq. (7.5.2) via Proposition 7.7",
+    "url": "https://rhofstad.win.tue.nl/Cap_Sel_Connectivity_in_RG.html",
+    "probability_per_simple_graph": {
+      "fraction": "16/315",
+      "value": 0.050793650793650794
+    },
+    "probability_simple": {
+      "fraction": "32/105",
+      "value": 0.3047619047619048
+    },
+    "repeated_model_restart_rate": {
+      "fraction": "73/105",
+      "value": 0.6952380952380952
+    },
+    "restart_rate_ratio_repeated_over_retrying": 2.254565456386727
+  },
   "metrics": {
     "max_abs_relative_deviation": 0.029512084602361238,
     "mean_abs_relative_deviation": 0.029512084602361238,
@@ -25,6 +42,7 @@
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.171405,
       "mc_z_vs_exact": -0.213924723604809
     },
@@ -36,6 +54,7 @@
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.172725,
       "mc_z_vs_exact": 1.3518343743927863
     },
@@ -47,6 +66,7 @@
       "relative_deviation_vs_uniform": 0.029512084602361238,
       "first_order_prediction": 0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.17198,
       "mc_z_vs_exact": 0.46812942893201936
     },
@@ -58,6 +78,7 @@
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.16235,
       "mc_z_vs_exact": 0.731164198042819
     },
@@ -69,6 +90,7 @@
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.160435,
       "mc_z_vs_exact": -1.5946607923298257
     },
@@ -80,6 +102,7 @@
       "relative_deviation_vs_uniform": -0.029512084602361238,
       "first_order_prediction": -0.018571428571428572,
       "closed_form_verified": true,
+      "cm_law_verified": true,
       "mc_frequency": 0.161105,
       "mc_z_vs_exact": -0.7809256782046659
     }
