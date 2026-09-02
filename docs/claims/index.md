@@ -322,7 +322,7 @@ JSON result files; the pages cite the numbers, the JSONs hold the exact values.
 | [`control_audit.py`](evidence/control_audit.py) → [`control_audit_results.json`](evidence/control_audit_results.json) | Degrees, additivity, clustering, assortativity, orbit splits, the four-node census |
 | [`audit_section_h.py`](evidence/audit_section_h.py) → [`audit_section_h_results.json`](evidence/audit_section_h_results.json) | Per-node (local) signal-to-floor, matched-pair leakage, placement experiments |
 | [`audit_section_i.py`](evidence/audit_section_i.py) → [`audit_section_i_results.json`](evidence/audit_section_i_results.json) | The $\kappa^L/2L$ floor formula, heavy-tail regimes, clique floors |
-| [`uniformity_bias.py`](evidence/uniformity_bias.py) → [`uniformity_bias_results.json`](evidence/uniformity_bias_results.json) | The sampler's exact deviation from uniform, closed form and Monte Carlo |
+| [`uniformity_bias.py`](evidence/uniformity_bias.py) → [`uniformity_bias_results.json`](evidence/uniformity_bias_results.json) | The sampler's exact deviation from uniform: closed form, Monte Carlo, and the configuration-model law as external reference |
 
 Code entry points: `ConfigModelGraph.from_config`, `SubgraphSequence`,
 `designed_clustering`, `predicted_cycle_floor`, `mean_excess_degree` — see the
