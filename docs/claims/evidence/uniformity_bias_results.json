@@ -107,6 +107,166 @@
       "mc_z_vs_exact": -0.7809256782046659
     }
   },
+  "first_order_structure": {
+    "phi_m": {
+      "fraction": "13/350",
+      "value": 0.037142857142857144,
+      "closed_form_verified": true
+    },
+    "self_loop_term": {
+      "fraction": "253/525",
+      "graph_independent": true
+    },
+    "per_graph": {
+      "01,02,03,12,34": {
+        "S": 7,
+        "duplicate_term": "13/50",
+        "equals_phi_times_S": true
+      },
+      "01,02,03,13,24": {
+        "S": 7,
+        "duplicate_term": "13/50",
+        "equals_phi_times_S": true
+      },
+      "01,02,03,14,23": {
+        "S": 7,
+        "duplicate_term": "13/50",
+        "equals_phi_times_S": true
+      },
+      "01,02,04,13,23": {
+        "S": 6,
+        "duplicate_term": "39/175",
+        "equals_phi_times_S": true
+      },
+      "01,03,04,12,23": {
+        "S": 6,
+        "duplicate_term": "39/175",
+        "equals_phi_times_S": true
+      },
+      "02,03,04,12,13": {
+        "S": 6,
+        "duplicate_term": "39/175",
+        "equals_phi_times_S": true
+      }
+    }
+  },
+  "size_scan": {
+    "seed": 20260902,
+    "tiled_sequence": [
+      3,
+      2,
+      2,
+      2,
+      1
+    ],
+    "rows": [
+      {
+        "tiles": 1,
+        "nodes": 5,
+        "edges": 5,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.3028009084027252,
+        "phi_m": 0.037142857142857144,
+        "four_m_phi_m": 0.7428571428571429,
+        "S_mean": 6.475,
+        "S_std": 0.4993746088859544,
+        "typical_relative_bias": 0.018548199758621167,
+        "max_relative_bias": 0.019500000000000014,
+        "first_order_tvd": 0.0092625,
+        "sqrt_m_times_typical": 0.041475035520522126
+      },
+      {
+        "tiles": 2,
+        "nodes": 10,
+        "edges": 10,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.3574620196604111,
+        "phi_m": 0.020648661432975158,
+        "four_m_phi_m": 0.8259464573190063,
+        "S_mean": 13.865,
+        "S_std": 0.9983861978212639,
+        "typical_relative_bias": 0.02061533857816664,
+        "max_relative_bias": 0.04408489215940196,
+        "first_order_tvd": 0.008552159349002487,
+        "sqrt_m_times_typical": 0.06519142464254372
+      },
+      {
+        "tiles": 4,
+        "nodes": 20,
+        "edges": 20,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.3734827264239029,
+        "phi_m": 0.011085261140196753,
+        "four_m_phi_m": 0.8868208912157403,
+        "S_mean": 28.415,
+        "S_std": 1.5851734920821756,
+        "typical_relative_bias": 0.017572062112248526,
+        "max_relative_bias": 0.05082592232780212,
+        "first_order_tvd": 0.007218999186024631,
+        "sqrt_m_times_typical": 0.07858465077567249
+      },
+      {
+        "tiles": 8,
+        "nodes": 40,
+        "edges": 40,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.3766478342749529,
+        "phi_m": 0.005806045829121504,
+        "four_m_phi_m": 0.9289673326594406,
+        "S_mean": 57.0275,
+        "S_std": 2.1706551430386174,
+        "typical_relative_bias": 0.012602923239700504,
+        "max_relative_bias": 0.05209474620179268,
+        "first_order_tvd": 0.004990586692421392,
+        "sqrt_m_times_typical": 0.07970788522744361
+      },
+      {
+        "tiles": 16,
+        "nodes": 80,
+        "edges": 80,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.35938903863432164,
+        "phi_m": 0.0029898619147145557,
+        "four_m_phi_m": 0.9567558127086578,
+        "S_mean": 114.775,
+        "S_std": 3.19677571937726,
+        "typical_relative_bias": 0.009557917973250297,
+        "max_relative_bias": 0.030571338077956315,
+        "first_order_tvd": 0.00381637186776346,
+        "sqrt_m_times_typical": 0.08548861724621873
+      },
+      {
+        "tiles": 32,
+        "nodes": 160,
+        "edges": 160,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.37105751391465674,
+        "phi_m": 0.0015224037738161957,
+        "four_m_phi_m": 0.9743384152423652,
+        "S_mean": 229.87,
+        "S_std": 4.274119792425102,
+        "typical_relative_bias": 0.006506936101730471,
+        "max_relative_bias": 0.02455637287165523,
+        "first_order_tvd": 0.0025635757147290917,
+        "sqrt_m_times_typical": 0.08230695468258156
+      },
+      {
+        "tiles": 64,
+        "nodes": 320,
+        "edges": 320,
+        "uniform_samples": 400,
+        "acceptance_rate": 0.3883495145631068,
+        "phi_m": 0.0007696029493648879,
+        "four_m_phi_m": 0.9850917751870565,
+        "S_mean": 460.7675,
+        "S_std": 6.740062592439332,
+        "typical_relative_bias": 0.005187172050045262,
+        "max_relative_bias": 0.019419006419849547,
+        "first_order_tvd": 0.002070746605763936,
+        "sqrt_m_times_typical": 0.09279095451910517
+      }
+    ]
+  },
   "monte_carlo": {
     "samples": 200000,
     "seed": 20260830,
