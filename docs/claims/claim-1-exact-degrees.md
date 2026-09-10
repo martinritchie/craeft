@@ -74,15 +74,26 @@ The numerator therefore collapses to $\prod_u d_u!$, and all that distinguishes
 one path from another is its normalisers.
 
 Nor, here, do the normalisers distinguish paths. $A_t$ depends only on how many
-stubs remain, $T_t = 2m - 2(t-1)$, not on which edges exist, so every ordering
-of $g$'s edges has the same product of them. Summing over the $m!$ orderings,
+stubs remain, not on which edges exist. Each commit uses two stubs, so the count
+runs $T_t = 2m, 2m-2, \ldots, 2$, and the product of the pair counts is the same
+for every ordering:
 
-$$\sum_{\pi} \prod_{t=1}^{m} \frac{1}{A_t} \;=\; \frac{m!\,2^m}{(2m)!} \;=\; \frac{1}{(2m-1)!!},$$
+$$\prod_{t=1}^{m} \frac{1}{A_t}
+\;=\; \prod_{t=1}^{m} \frac{2}{T_t\,(T_t - 1)}
+\;=\; \frac{2^m}{(2m)(2m-1)\,(2m-2)(2m-3)\cdots 2 \cdot 1}
+\;=\; \frac{2^m}{(2m)!}.$$
 
-the last step because $(2m)!$ splits into its even factors $2^m\,m!$ and its
-odd factors $(2m-1)!!$. That double factorial counts the ways to pair $2m$
-stubs, so the right-hand side is the probability of one particular pairing under
-uniform matching. Writing $P_{\mathrm{CM}}$ for the configuration model's law,
+There are $m!$ orderings of $g$'s edges, each contributing this amount, so
+
+$$\sum_{\pi} \prod_{t=1}^{m} \frac{1}{A_t} \;=\; \frac{m!\,2^m}{(2m)!} \;=\; \frac{1}{(2m-1)!!}.$$
+
+The last step is a cancellation. The even factors of $(2m)!$ are
+$2 \cdot 4 \cdots 2m = 2^m\,m!$, exactly the numerator; what remains is the
+product of the odd factors, $1 \cdot 3 \cdots (2m-1) = (2m-1)!!$. For $m = 2$:
+the pair counts are $6$ then $1$, two orderings give $2/6 = 1/3$, and
+$3!! = 3$. That double factorial counts the ways to pair $2m$ stubs, so the
+right-hand side is the probability of one particular pairing under uniform
+matching. Writing $P_{\mathrm{CM}}$ for the configuration model's law,
 
 \begin{equation}
 P_{\mathrm{CM}}(g) \;=\; \frac{\prod_u d_u!}{(2m-1)!!}

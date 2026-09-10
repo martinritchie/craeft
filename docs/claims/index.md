@@ -107,22 +107,23 @@ every run. The guarantee costs a small sampling bias — derived exactly and mea
 at within 3% of uniform per graph on an enumerable sequence — that cancels in
 matched pairs.
 
-### [Claim 2 — Subgraph counts are set by the input, not by luck](claim-2-designed-counts.md)
+### [Claim 2 — Subgraph counts are designed, plus a predictable floor](claim-2-designed-counts.md)
 
 The number of triangles, squares or diamonds you design is the number the generator
 builds: realized count = designed count + the by-product floor, with additivity
-measured within 2% across every family tested. The floor itself is predictable in
-closed form before anything is built. The claim is exact when participation is
-*prescribed*; sampled participation can be clipped by the degree budget.
+measured within 2% on the regular-degree families audited. The floor is
+predictable in closed form before anything is built, to within about 15% at
+light-tailed degrees. The claim is exact when participation is *prescribed*;
+sampled participation is clipped by the degree budget where the budget binds.
 
 ### [Claim 3 — Clustering is known before the graph exists](claim-3-clustering-in-advance.md)
 
 With degrees pinned, the clustering denominator is fixed in advance, and orbit
 resolution makes every shape's triangle contribution a known integer. Designed
-clustering is a closed-form calculation — `designed_clustering(config)` — and the
-realized value lands within ~2% of designed + floor.
+clustering is a closed-form calculation — `designed_clustering(config)` — and
+realized triangles land within 1% of designed + floor at regular degrees.
 
-### [Claim 4 — Higher-order structure stays free](claim-4-residual-freedom.md)
+### [Claim 4 — Higher-order structure: what is and is not controlled](claim-4-residual-freedom.md)
 
 With degrees and clustering pinned, real freedom remains: which four-node shapes
 appear, how shapes are placed, how local clustering varies with degree. That residual
@@ -194,8 +195,8 @@ words:
 | P1 Degrees exact per node | ✅ 100% of nodes, all families |
 | P2 Edge counts equal | ✅ follows from P1 |
 | P3 Signal ≥ 5× the floor | ⚠️ depends on degree choices — computable in advance (see §7) |
-| P4 No unasked-for structure above the floor | ✅ measured directly via the four-node census; the one class that moves (the paw) moves by construction |
-| P5 Clustering matched by design | ✅ closed-form; realized within ~2% |
+| P4 No unasked-for structure above the floor | ✅ measured via the four-node census; every class that rises (paw, diamond) does so for a structural reason, and in the cycle families only the designed class moves |
+| P5 Clustering matched by design | ✅ closed-form; realized triangles within 1% of designed + floor |
 | P6 Reproducible from a seed | ✅ |
 | P7 Assortativity reported | ✅ reported — and it caught a confound |
 | P3-local Participating nodes clear 5× of their *own* floor | ✅ measured — and it disagrees with global P3 in both directions |
@@ -208,21 +209,25 @@ a footnote:
 pentagon vs hexagon, all at the same heterogeneous degrees — fails the signal-to-floor
 test. Long cycles appear spontaneously in huge numbers once degrees are spread out: the
 pentagon and hexagon families land *below* their own floor. The cure is regularity: at
-constant degree 4, the same family clears the bar comfortably (triangles 133×, squares
-30×, pentagons 11×; hexagons marginal at 4×).
+constant degree 4, the same family clears the bar comfortably (triangles 106×, squares
+40×, pentagons 11×; hexagons marginal at 4×).
 
 **The floor is a formula.** The driver is the mean excess degree,
 $\kappa=\langle k(k-1)\rangle/\langle k\rangle$ — how many onward edges you find after
 arriving somewhere along a random edge. The floor for length-$L$ cycles is
-$\kappa^L/2L$, and that one expression reproduces every floor measured in this project
-to within ~16%. It over-predicts under heavy tails, which is the safe direction: it
-never promises a contrast the graph will not deliver. Whether a dataset is possible is
-a pre-flight calculation — `predicted_cycle_floor` — not a build-and-see.
+$\kappa^L/2L$, the classical configuration-model result (Bollobás 1980, Wormald 1981;
+Bianconi and Marsili 2005 for general degrees), and it reproduces the floors measured
+at light-tailed degrees to within about 15%. Under a heavy tail it over-predicts, by up
+to 2.6× at $\gamma = 2.5$ and $L = 6$: the safe direction for a design, since it never
+promises a contrast the graph will not deliver, but heavy-tail floors must be measured
+rather than predicted. Whether a dataset is possible is a pre-flight calculation —
+`predicted_cycle_floor` — not a build-and-see.
 
-**$\kappa$ is the controlling variable, not the distribution's shape.** A power-law
-family and a moderate heterogeneous family with the *same* $\kappa$ produce
-statistically identical floors at every cycle length. Degree heterogeneity is harmful
-exactly because it raises $\kappa$ at the same mean — a measured 3–19× inflation.
+**$\kappa$ is the controlling variable, not the distribution's shape.** At light tails
+a power-law family and a moderate heterogeneous family with the *same* $\kappa$ produce
+floors that agree within replicate spread at every cycle length. Degree heterogeneity
+is harmful exactly because it raises $\kappa$ at the same mean — a measured 4–19×
+inflation.
 
 **Heavy tails kill cycles but spare cliques.** At power-law exponent 2.5 even the
 triangle fails the 5× test (3.6×), and $\kappa$ grows with graph size there, so
@@ -241,8 +246,9 @@ the null.
 
 **Sampled participation under-delivers at the budget boundary.** At the 2016 cycle
 model's parameters the budget constraint is satisfied with equality — zero slack — and
-the cap clips participation to 62% of nominal. Prescribing the full amount does not
-rescue it; the build then deadlocks because no free stubs remain for pairing.
+the cap clips participation well below nominal; the shipped measurement, on the
+regular-degree-4 family at rate 2, is 73% of nominal. Prescribing more than the
+budget is rejected by the pre-flight check rather than attempted.
 
 **Global and local control are different questions.** The square family fails global
 P3 at 4.1× — yet 70% of its participating nodes clear 5× against their own local
@@ -255,7 +261,8 @@ backfires — the displaced stubs pile onto the hubs and generate nine times the
 in *accidental* pentagons.
 
 **Placement direction matters, and it is not the intuitive one.** Giving hubs the
-heavy *roles* inside shapes lowers assortativity (−0.12 against +0.03): an asymmetric
+heavy *roles* inside shapes lowers assortativity relative to an even split (by at
+least 0.05 in the regression test): an asymmetric
 shape's edges mostly run from heavy roles to light ones, so ranking roles by degree
 sends edges *across* the degree gap. What raises assortativity is concentrating whole
 shapes on hubs — which is what the degree cap quietly does.
@@ -276,13 +283,12 @@ Each rule has a measured reason behind it.
   accident; hexagons occur by the tens of thousands. $K_4$'s floor is zero at
   light-tailed degrees; under a heavy tail it stays small but grows with graph size —
   measure it at the size you intend to use.
-- **Use triangles only when clustering is the variable under study.** They are a ~19×
+- **Use triangles only when clustering is the variable under study.** They are a ~18×
   clustering outlier against every other cycle.
 - **Compare cycle families to each other, not to the random null.** The null is not
   assortativity-matched to them (the +0.09 gap). Or build a null matched on
   assortativity.
-- **Leave headroom under the degree budget.** At equality, participation clips and
-  builds deadlock.
+- **Leave headroom under the degree budget.** At equality, participation clips.
 - **Prescribe rather than sample when control matters.** Prescribed participation and
   prescribed orbit splits are exact; sampled ones are exact only in expectation.
 - **Judge node-level datasets locally, not globally.** The global 5× test and the
@@ -302,7 +308,8 @@ Each rule has a measured reason behind it.
   *refusing algorithm*. The retry bias here has an exact expression and a measured
   value (max per-graph deviation from uniform 2.95% on the audited sequence; see
   [Claim 1](claim-1-exact-degrees.md)) and cancels in matched pairs, but the
-  refusing algorithm has not been implemented or compared.
+  comparison with the refusing algorithm covers plain-edge pairing only; the
+  shape-bin pairing's bias has not been analysed.
 - **The automorphism-cardinality conjecture** from the 2014 paper remains unproven.
   It is the only unproven claim in the corpus.
 - **Deliberate hub concentration.** Measurement shows the 2017 paper's assortativity
