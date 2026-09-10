@@ -63,8 +63,8 @@ of the docs:
    designed count + a by-product floor that is predictable in closed form
    before anything is built.
 3. **Clustering is known before the graph exists** —
-   `designed_clustering(config)` is a closed-form calculation; the realized
-   value lands within ~2% of designed + floor.
+   `designed_clustering(config)` is a closed-form calculation; realized
+   triangles land within 1% of designed + floor at regular degrees.
 4. **Higher-order structure stays free** — with degrees and clustering pinned,
    which shapes appear and where remains the experimental variable, and its
    confounds are measured rather than assumed.

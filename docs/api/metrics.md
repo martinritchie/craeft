@@ -45,8 +45,12 @@ $$\mathbb{E}[N_L] \to \frac{\kappa^L}{2L}$$
 
 for $N_L$ the number of $L$-cycles.
 
-This reproduces the project's measured by-product cycle floors to ~3–16%
-across regular and heterogeneous degree regimes. Two caveats travel with it:
+The result is due to Bollobás (1980) and Wormald (1981) for regular graphs and
+Bianconi and Marsili (2005) for general degree sequences. It reproduces the
+project's measured by-product cycle floors to within about 15% at light-tailed
+degrees; under a heavy tail ($\gamma = 2.5$) it over-predicts by up to 2.6× at
+$L = 6$ (see [Claim 2](../claims/claim-2-designed-counts.md)). Two caveats
+travel with it:
 
 - It counts **all** cycles. The [induced-cycle](#induced-cycles) floor is
   slightly lower, and the gap grows with density — measured ~5–15% for
